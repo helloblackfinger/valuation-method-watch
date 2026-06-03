@@ -353,6 +353,59 @@ def collect_naver_news(lookback_days: int) -> list[SearchResult]:
     return results
 
 
+# ── 한경 컨센서스 (증권사 리포트 PDF 직접 수집) ────────────────────────────────
+
+CONSENSUS_BASE = "http://consensus.hankyung.com"
+CONSENSUS_LIST = CONSENSUS_BASE + "/analysis/list?skinType=business"
+
+
+def collect_consensus(limit: int) -> list[SearchResult]:
+    """한경 컨센서스에서 최근 증권사 기업분석 리포트 PDF 목록을 수집.
+
+    각 행에서 제목(종목명+코드)·증권사·작성일·PDF 링크를 추출한다.
+    반환되는 URL은 PDF이므로 fetch_text가 본문(산식 표 포함)을 그대로 읽는다.
+    """
+    results: list[SearchResult] = []
+    try:
+        resp = requests.get(CONSENSUS_LIST, headers={"User-Agent": USER_AGENT}, timeout=20)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+        tbody = soup.find("tbody")
+        if not tbody:
+            print("[warn] consensus: tbody not found", file=sys.stderr)
+            return results
+
+        for tr in tbody.find_all("tr"):
+            tds = tr.find_all("td")
+            if len(tds) < 6:
+                continue
+            link = tr.find("a", href=re.compile(r"downpdf\?report_idx="))
+            if not link:
+                continue
+            pdf_url = CONSENSUS_BASE + link.get("href", "")
+            title = link.get_text(strip=True)
+            broker = tds[5].get_text(strip=True)
+            date = tds[0].get_text(strip=True)
+            target = tds[2].get_text(strip=True) if len(tds) > 2 else ""
+
+            label = f"{title}"
+            meta_bits = [b for b in (broker, date) if b]
+            if meta_bits:
+                label += f" — {' / '.join(meta_bits)}"
+
+            results.append(SearchResult(
+                title=label,
+                url=pdf_url,
+                snippet=f"적정가격 {target}" if target else "",
+                source_query="한경컨센서스",
+                source_type="broker_pdf",
+            ))
+    except Exception as exc:
+        print(f"[warn] consensus crawl failed: {exc}", file=sys.stderr)
+
+    return results[:limit]
+
+
 # ── 부가 URL ─────────────────────────────────────────────────────────────────
 
 def extra_url_results() -> list[SearchResult]:
@@ -688,7 +741,13 @@ def collect_results() -> tuple[list[SearchResult], str]:
     results.extend(naver_results)
     print(f"[info] naver news: {len(naver_results)} results", file=sys.stderr)
 
-    # 3) 추가 URL
+    # 3) 한경 컨센서스 — 증권사 리포트 PDF (산식 수치 추출용)
+    consensus_limit = int(os.getenv("CONSENSUS_LIMIT", "30"))
+    consensus_results = collect_consensus(consensus_limit)
+    results.extend(consensus_results)
+    print(f"[info] consensus PDFs: {len(consensus_results)} results", file=sys.stderr)
+
+    # 4) 추가 URL
     results.extend(extra_url_results())
 
     return dedupe_results(results), provider
@@ -873,7 +932,11 @@ def render_candidate(c: Candidate) -> str:
     identity = c.stock_name or c.title
     if c.stock_code:
         identity += f" ({c.stock_code})"
-    source_label = {"naver_news": "네이버뉴스", "community": "커뮤니티"}.get(c.source_type, "웹")
+    source_label = {
+        "naver_news": "네이버뉴스",
+        "community": "커뮤니티",
+        "broker_pdf": "증권사PDF",
+    }.get(c.source_type, "웹")
     lines = [
         f"### {escape_md(identity)}",
         f"- 상태: {c.status}",
@@ -910,6 +973,7 @@ def render_report(
     fetched_count: int,
     failed_urls: list[str],
     naver_news_count: int,
+    consensus_count: int = 0,
 ) -> str:
     confirmed = [c for c in candidates if c.status == "확인"]
     watch = [c for c in candidates if c.status == "후보"]
@@ -923,6 +987,7 @@ def render_report(
         "",
         f"- 검색 엔진: {provider}",
         f"- 네이버 뉴스 직접 수집: {naver_news_count}건",
+        f"- 한경 컨센서스 PDF: {consensus_count}건",
         f"- 확인한 URL 수: {fetched_count}",
         f"- 확인된 전환: {len(confirmed)}",
         f"- 후보: {len(watch)}",
@@ -997,6 +1062,7 @@ def main() -> int:
     results, provider = collect_results()
 
     naver_news_count = sum(1 for r in results if r.source_type == "naver_news")
+    consensus_count = sum(1 for r in results if r.source_type == "broker_pdf")
 
     candidates: list[Candidate] = []
     failed_urls: list[str] = []
@@ -1029,7 +1095,10 @@ def main() -> int:
     save_state(state)
 
     # 리포트 저장
-    report = render_report(candidates, provider, fetched_count, failed_urls, naver_news_count)
+    report = render_report(
+        candidates, provider, fetched_count, failed_urls,
+        naver_news_count, consensus_count,
+    )
     report_path = REPORTS_DIR / f"{TODAY_KST.isoformat()}.md"
     report_path.write_text(report, encoding="utf-8")
 
@@ -1047,6 +1116,7 @@ def main() -> int:
         Wrote {report_path}
         Provider:      {provider}
         Naver news:    {naver_news_count}
+        Consensus PDF: {consensus_count}
         Results:       {len(results)}
         Fetched:       {fetched_count}
         Candidates:    {len(candidates)} (확인 {confirmed} / 후보 {watch})

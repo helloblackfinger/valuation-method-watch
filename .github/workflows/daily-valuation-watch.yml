@@ -38,6 +38,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           LOOKBACK_DAYS: "2"
           MAX_REPORT_AGE_DAYS: "30"
+          CONSENSUS_LIMIT: "30"
         run: python scripts/valuation_method_watch.py
 
       - name: Upload report artifact

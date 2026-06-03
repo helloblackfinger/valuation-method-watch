@@ -8,6 +8,7 @@ import os
 import re
 import sys
 import textwrap
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -214,13 +215,25 @@ def request_json(
     method: str = "GET",
     payload: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    response = requests.request(
-        method, url,
-        headers=headers, params=params, json=payload,
-        timeout=25,
-    )
-    response.raise_for_status()
-    return response.json()
+    # 레이트 리밋(429) 발생 시 지수 백오프로 최대 3회 재시도
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        response = requests.request(
+            method, url,
+            headers=headers, params=params, json=payload,
+            timeout=25,
+        )
+        if response.status_code == 429:
+            wait = 2 ** attempt
+            print(f"[warn] 429 rate limited, retry in {wait}s", file=sys.stderr)
+            time.sleep(wait)
+            last_exc = requests.HTTPError("429 Too Many Requests")
+            continue
+        response.raise_for_status()
+        return response.json()
+    if last_exc:
+        raise last_exc
+    return {}
 
 
 # ── 웹 검색 ─────────────────────────────────────────────────────────────────
@@ -263,14 +276,21 @@ def search_web(query: str, limit: int, lookback_days: int) -> list[SearchResult]
 
     if tavily_key:
         time_range = "day" if lookback_days <= 1 else "week"
+        # Tavily는 Authorization: Bearer 헤더 인증을 요구함 (body의 api_key는 deprecated)
         data = request_json(
             "https://api.tavily.com/search",
             method="POST",
-            headers={"User-Agent": USER_AGENT},
+            headers={
+                "Authorization": f"Bearer {tavily_key}",
+                "Content-Type": "application/json",
+                "User-Agent": USER_AGENT,
+            },
             payload={
-                "api_key": tavily_key, "query": query,
-                "search_depth": "advanced", "max_results": min(limit, 10),
-                "topic": "general", "time_range": time_range,
+                "query": query,
+                "search_depth": "basic",  # 무료 크레딧 절약 (1 credit/req)
+                "max_results": min(limit, 10),
+                "topic": "general",
+                "time_range": time_range,
             },
         )
         return [

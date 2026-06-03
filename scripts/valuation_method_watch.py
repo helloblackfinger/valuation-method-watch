@@ -114,6 +114,15 @@ SOTP_PATTERNS = [
     r"SOTP", r"사업부별\s*가치", r"가치\s*합산", r"EV/EBITDA",
 ]
 
+# 시클리컬(수주·경기민감) 산업 키워드 — 빅사이클 법칙이 가장 잘 적용되는 곳
+CYCLICAL_KEYWORDS = [
+    "조선", "변압기", "중전기", "전력망", "전력기기", "송배전",
+    "방산", "방위", "무기", "함정", "건설기계", "굴착기",
+    "정유", "석유화학", "화학", "철강", "비철", "해운", "벌크",
+    "반도체", "메모리", "파운드리", "풍력", "원전", "원자력",
+    "수주", "수주잔고", "수주잔량", "턴어라운드", "업황 회복", "슈퍼사이클",
+]
+
 # ── 도메인 필터 ──────────────────────────────────────────────────────────────
 
 # 오래된 개인 글·백과사전·블로그 등 신뢰도 낮은 출처 (부분 일치)
@@ -210,6 +219,10 @@ class Candidate:
     per: float | None = None        # 적용 PER 배수
     old_price: int | None = None    # BPS × PBR 로 계산된 기존 목표가
     new_price: int | None = None    # EPS × PER 로 계산된 신규 목표가
+    # 적용 기준연도 (멀티플의 EPS/BPS 기준 — 기준연도 변경 함정 방지용)
+    eps_year: str = ""              # 예: 2027F, 12MF
+    per_year: str = ""
+    pbr_year: str = ""
     # 과거 이력 비교 결과 (같은 종목·증권사의 직전 PBR 리포트에서 복원)
     prior_method: str = ""          # 같은 증권사의 직전 산식
     prior_date: str = ""            # 직전 리포트 날짜
@@ -219,6 +232,13 @@ class Candidate:
     prior_target: str = ""
     # 교차 증권사 컨센서스
     consensus_brokers: list[str] = field(default_factory=list)  # 현재 PER로 본 증권사들
+    # ── 빅사이클 분석 ──────────────────────────────────────────────────────────
+    phase: str = ""                 # 국면 코드 ① ~ ⑤
+    phase_label: str = ""           # 국면 설명 (이모지 포함)
+    rerating_trend: str = ""        # 멀티플 사다리 (예: "PER 14→16배 상향")
+    rerating_kind: str = ""         # 멀티플 / EPS / 혼합 / 기준연도변경
+    diffusion: str = ""             # 증권사 간 확산도 (예: "최근 60일 3개사 PER 전환")
+    is_cyclical: bool = False       # 시클리컬(수주산업) 여부
 
 
 # ── HTTP 헬퍼 ────────────────────────────────────────────────────────────────
@@ -604,40 +624,64 @@ def _within(a: int, b: int, tol: float = 0.15) -> bool:
     return abs(a - b) / b <= tol
 
 
+def _base_year_near(text: str, span: tuple[int, int], window: int = 30) -> str:
+    """매칭 위치 주변에서 기준연도 토큰을 찾는다 (2027F, 26E, 12MF, 12M Fwd 등)."""
+    lo = max(0, span[0] - window)
+    hi = min(len(text), span[1] + window)
+    scope = text[lo:hi]
+    m = re.search(r"(20\d{2}|2\d)\s*[EFP]\b", scope)       # 2027F, 26E
+    if m:
+        return m.group(0).replace(" ", "")
+    m = re.search(r"12\s*M\s*F(?:wd)?", scope, re.IGNORECASE)  # 12MF, 12M Fwd
+    if m:
+        return "12MF"
+    m = re.search(r"12\s*개월\s*선행", scope)
+    if m:
+        return "12MF"
+    return ""
+
+
 def extract_valuation_numbers(
     text: str,
     target_price: str = "",
-) -> tuple[int | None, float | None, int | None, float | None, int | None, int | None]:
-    """본문에서 BPS·PBR배수·EPS·PER배수를 추출하고 기존/신규 목표가를 계산.
+) -> dict[str, Any]:
+    """본문에서 BPS·PBR배수·EPS·PER배수와 적용 기준연도를 추출하고 목표가를 계산.
 
-    반환: (bps, pbr, eps, per, old_price=BPS×PBR, new_price=EPS×PER)
+    반환 dict: bps, pbr, eps, per, old_price, new_price, eps_year, per_year, pbr_year
 
     ⚠️ 검증: PDF 표가 평면화되면 라벨과 무관한 숫자가 잡혀 엉뚱한 곱이 나올 수 있다.
-    그래서 계산된 EPS×PER 값이 리포트에 명시된 목표주가와 ±15% 이내로
-    일치할 때만 해당 수치를 신뢰한다. 불일치 시 EPS/PER는 폐기.
+    계산된 EPS×PER 값이 리포트 명시 목표주가와 ±15% 이내일 때만 신뢰한다.
+    ⚠️ 기준연도: 멀티플 비교 시 'PER 14→16'이 사실은 기준연도(2026E→2027F) 변경일
+    수 있으므로, EPS/PER/PBR가 어느 해 기준인지 함께 저장한다.
     """
     bps = pbr = eps = per = None
     old_price = new_price = None
+    eps_year = per_year = pbr_year = ""
 
-    # 주당 값 (원 단위, 3자리 이상)
+    # 주당 값 (원 단위, 3자리 이상) + 기준연도
     m = re.search(r"\bBPS\b\s*(?:는|은|:|=|\()?\s*([\d,]{3,})\s*원", text)
     if m:
         bps = _to_int(m.group(1))
+        pbr_year = _base_year_near(text, m.span())
     m = re.search(r"\bEPS\b\s*(?:는|은|:|=|\()?\s*([\d,]{3,})\s*원", text)
     if m:
         eps = _to_int(m.group(1))
+        eps_year = _base_year_near(text, m.span())
 
-    # 배수 (PBR/PER 'N배' 또는 'N.N배')
+    # 배수 (PBR/PER 'N배')
     m = re.search(r"(?:Target\s*|목표\s*|적정\s*|예상\s*)?PBR\s*([\d.]{1,5})\s*배", text)
     if m:
         try:
             pbr = _to_float(m.group(1))
+            if not pbr_year:
+                pbr_year = _base_year_near(text, m.span())
         except ValueError:
             pbr = None
     m = re.search(r"(?:Target\s*|목표\s*|적정\s*|예상\s*)?PER\s*([\d.]{1,5})\s*배", text)
     if m:
         try:
             per = _to_float(m.group(1))
+            per_year = _base_year_near(text, m.span())
         except ValueError:
             per = None
 
@@ -649,11 +693,10 @@ def extract_valuation_numbers(
         if target and _within(candidate_new, target):
             new_price = candidate_new
         else:
-            # 검증 실패 → 잘못 잡힌 숫자로 간주, 폐기
             eps = per = None
+            eps_year = per_year = ""
 
-    # 기존(BPS×PBR): 현재 목표가와 같으면 '기존'이 아니므로 제외,
-    # 또한 신규 목표가와 너무 비슷하면 변경 의미가 없어 제외
+    # 기존(BPS×PBR): 현재/신규 목표가와 너무 비슷하면 '기존'이 아니므로 제외
     if bps and pbr:
         candidate_old = round(bps * pbr)
         too_close_to_target = target and _within(candidate_old, target, 0.05)
@@ -662,8 +705,13 @@ def extract_valuation_numbers(
             old_price = candidate_old
         else:
             bps = pbr = None
+            pbr_year = ""
 
-    return bps, pbr, eps, per, old_price, new_price
+    return {
+        "bps": bps, "pbr": pbr, "eps": eps, "per": per,
+        "old_price": old_price, "new_price": new_price,
+        "eps_year": eps_year, "per_year": per_year, "pbr_year": pbr_year,
+    }
 
 
 def extract_report_date(text: str) -> str:
@@ -766,7 +814,8 @@ def build_candidate(result: SearchResult, text: str) -> Candidate | None:
     stock_name, stock_code = extract_stock(text, result.title)
     key = state_key(stock_name, stock_code, result.url)
     target_price = extract_target_price(text)
-    bps, pbr, eps, per, old_price, new_price = extract_valuation_numbers(text, target_price)
+    v = extract_valuation_numbers(text, target_price)
+    is_cyclical = any(kw in f"{result.title} {text[:8000]}" for kw in CYCLICAL_KEYWORDS)
     return Candidate(
         key=key,
         title=result.title.strip() or stock_name or result.url,
@@ -783,8 +832,10 @@ def build_candidate(result: SearchResult, text: str) -> Candidate | None:
         matched_terms=matched_terms,
         source_query=result.source_query,
         source_type=result.source_type,
-        bps=bps, pbr=pbr, eps=eps, per=per,
-        old_price=old_price, new_price=new_price,
+        bps=v["bps"], pbr=v["pbr"], eps=v["eps"], per=v["per"],
+        old_price=v["old_price"], new_price=v["new_price"],
+        eps_year=v["eps_year"], per_year=v["per_year"], pbr_year=v["pbr_year"],
+        is_cyclical=is_cyclical,
     )
 
 
@@ -901,6 +952,16 @@ def dedupe_by_stock(candidates: list[Candidate]) -> list[Candidate]:
     return unique
 
 
+def _phase_badge(c: Candidate) -> str:
+    """국면 + 시클리컬 배지 (예: '🔄 전환(골든존) · 시클리컬')."""
+    bits = []
+    if c.phase_label:
+        bits.append(c.phase_label)
+    if c.is_cyclical:
+        bits.append("시클리컬")
+    return " · ".join(bits)
+
+
 def tg_line(c: Candidate) -> str:
     """후보용 한 줄(+수치) 요약: • <a>종목</a> — 증권사 · 목표가"""
     name = (c.stock_name or c.title)[:24]
@@ -912,19 +973,26 @@ def tg_line(c: Candidate) -> str:
     suffix = f" — {' · '.join(bits)}" if bits else ""
     line = f"• <a href='{c.url}'>{tg_escape(name)}</a>{tg_escape(suffix)}"
 
-    breakdown = valuation_breakdown(c)
-    if breakdown:
-        line += f"\n   ↳ {tg_escape(breakdown)}"
+    badge = _phase_badge(c)
+    if badge:
+        line += f"\n   ↳ {tg_escape(badge)}"
+    if c.rerating_trend:
+        line += f"\n   ↳ {tg_escape(c.rerating_trend)}"
+    else:
+        breakdown = valuation_breakdown(c)
+        if breakdown:
+            line += f"\n   ↳ {tg_escape(breakdown)}"
     return line
 
 
 def tg_confirmed_line(c: Candidate) -> str:
     """확인된 전환용 포맷:
-        • 종목 - 증권사 날짜
-          ㄴ 기존 BPS x원 × PBR x배 = 목표가   (현재 리포트 또는 과거 이력에서 복원)
-          ㄴ 신규 EPS x원 × PER x배 = 목표가
-          ㄴ 합의 N개 증권사 PER 적용           (2곳 이상일 때)
-    수치가 없는 쪽(ㄴ)은 생략된다.
+        • 종목 - 증권사 날짜  [국면 배지]
+          ㄴ 기존 BPS×PBR = 목표가   (현재 리포트 또는 과거 이력에서 복원)
+          ㄴ 신규 EPS×PER = 목표가
+          ㄴ 재평가 PER 14→16배 상향
+          ㄴ 합의 N개 증권사 PER 적용 / 확산도
+    수치가 없는 줄(ㄴ)은 생략된다.
     """
     name = (c.stock_name or c.title)[:24]
     head_bits = []
@@ -934,6 +1002,10 @@ def tg_confirmed_line(c: Candidate) -> str:
         head_bits.append(c.report_date)
     head = f" - {tg_escape(' '.join(head_bits))}" if head_bits else ""
     lines = [f"• <a href='{c.url}'>{tg_escape(name)}</a>{head}"]
+
+    badge = _phase_badge(c)
+    if badge:
+        lines.append(f"   ㄴ {tg_escape(badge)}")
 
     # 기존 산식: 현재 리포트 우선, 없으면 과거 이력에서 복원
     use_bps = c.bps if c.bps else c.prior_bps
@@ -946,7 +1018,6 @@ def tg_confirmed_line(c: Candidate) -> str:
         src = f" [{c.prior_date} 기록]" if (not c.bps and c.prior_date) else ""
         lines.append(f"   ㄴ 기존 {tg_escape(old + src)}")
     elif c.prior_method and c.prior_target:
-        # 옛 배수는 없어도 직전 목표가는 보여줌
         d = f" ({c.prior_date})" if c.prior_date else ""
         lines.append(f"   ㄴ 기존 {tg_escape(c.prior_method)} 방식, 목표가 {tg_escape(c.prior_target)}{d}")
 
@@ -959,8 +1030,15 @@ def tg_confirmed_line(c: Candidate) -> str:
     elif c.target_price:
         lines.append(f"   ㄴ 신규 목표가 {tg_escape(c.target_price)}")
 
-    # 교차 증권사 컨센서스
-    if len(c.consensus_brokers) >= 2:
+    # 멀티플 재평가 사다리
+    if c.rerating_trend:
+        kind = f" ({c.rerating_kind})" if c.rerating_kind else ""
+        lines.append(f"   ㄴ 재평가 {tg_escape(c.rerating_trend + kind)}")
+
+    # 교차 증권사 컨센서스 / 확산도
+    if c.diffusion:
+        lines.append(f"   ㄴ {tg_escape(c.diffusion)}")
+    elif len(c.consensus_brokers) >= 2:
         lines.append(f"   ㄴ 합의 {len(c.consensus_brokers)}개 증권사 PER 적용")
 
     return "\n".join(lines)
@@ -969,18 +1047,27 @@ def tg_confirmed_line(c: Candidate) -> str:
 def send_telegram(bot_token: str, chat_id: str, candidates: list[Candidate]) -> None:
     confirmed = dedupe_by_stock([c for c in candidates if c.status == "확인"])
     watch = dedupe_by_stock([c for c in candidates if c.status == "후보"])
+    # 멀티플 재평가가 잡힌 종목 (확인/후보 무관) — 빅사이클 핵심 신호
+    rerating = dedupe_by_stock([c for c in candidates if c.rerating_trend])
 
-    if not confirmed and not watch:
+    if not confirmed and not watch and not rerating:
         return
 
     lines = [
         f"📊 <b>밸류에이션 전환 — {TODAY_KST.isoformat()}</b>",
-        f"확인 {len(confirmed)} · 후보 {len(watch)}",
+        f"확인 {len(confirmed)} · 후보 {len(watch)} · 재평가 {len(rerating)}",
     ]
 
     if confirmed:
         lines.append("\n🔴 <b>확인된 전환</b>")
         lines.extend(tg_confirmed_line(c) for c in confirmed[:8])
+
+    if rerating:
+        lines.append("\n📈 <b>멀티플 재평가(re-rating)</b>")
+        for c in rerating[:8]:
+            nm = (c.stock_name or c.title)[:24]
+            extra = f" [{c.rerating_kind}]" if c.rerating_kind else ""
+            lines.append(f"• <a href='{c.url}'>{tg_escape(nm)}</a> — {tg_escape(c.rerating_trend + extra)}")
 
     if watch:
         shown = watch[:8]
@@ -1081,6 +1168,8 @@ def render_candidate(c: Candidate) -> str:
         f"- 현재 감지 산식: {c.method}",
         f"- 출처 유형: {source_label}",
     ]
+    if c.phase_label:
+        lines.append(f"- 빅사이클 국면: {c.phase} {escape_md(c.phase_label)}{' · 시클리컬' if c.is_cyclical else ''}")
     if c.previous_method:
         lines.append(f"- 이전 감지 산식: {c.previous_method}")
     if c.broker:
@@ -1102,6 +1191,11 @@ def render_candidate(c: Candidate) -> str:
         lines.append(f"- 기존 산식(과거 {c.prior_date}): {escape_md(old)}")
     elif c.prior_method and c.prior_target:
         lines.append(f"- 기존 산식(과거 {c.prior_date}): {escape_md(c.prior_method)} 방식, 목표가 {escape_md(c.prior_target)}")
+    if c.rerating_trend:
+        kind = f" ({c.rerating_kind})" if c.rerating_kind else ""
+        lines.append(f"- 멀티플 재평가: {escape_md(c.rerating_trend + kind)}")
+    if c.diffusion:
+        lines.append(f"- 확산도: {escape_md(c.diffusion)}")
     if len(c.consensus_brokers) >= 2:
         lines.append(f"- 증권사 합의: {len(c.consensus_brokers)}곳 PER 적용 ({escape_md(', '.join(c.consensus_brokers[:6]))})")
     lines.append(f"- 전환 판단: {escape_md(c.reason)}")
@@ -1186,9 +1280,147 @@ def _snapshot(c: Candidate, date: str) -> dict[str, Any]:
         "bps": c.bps, "pbr": c.pbr,
         "eps": c.eps, "per": c.per,
         "old_price": c.old_price, "new_price": c.new_price,
+        "eps_year": c.eps_year, "per_year": c.per_year, "pbr_year": c.pbr_year,
         "target": c.target_price,
         "url": c.url,
     }
+
+
+def _days_between(d1: str, d2: str) -> int | None:
+    try:
+        return abs((dt.date.fromisoformat(d1) - dt.date.fromisoformat(d2)).days)
+    except Exception:
+        return None
+
+
+def detect_rerating(candidate: Candidate, past: list[dict[str, Any]]) -> None:
+    """A. 같은 증권사의 직전 동일-방식 리포트와 비교해 멀티플 재평가(re-rating) 감지.
+
+    핵심 주의: 'PER 14→16'이 기준연도(2026E→2027F) 변경 때문일 수 있으므로,
+    기준연도가 같을 때만 '순수 멀티플 상향'으로 본다.
+    """
+    method = candidate.method
+    if not past:
+        return
+
+    if method.startswith("PER") and candidate.per:
+        prior = next(
+            (r for r in sorted(past, key=lambda r: r.get("date", ""), reverse=True)
+             if str(r.get("method", "")).startswith("PER") and r.get("per")),
+            None,
+        )
+        if prior and candidate.per > prior["per"]:
+            same_year = (
+                candidate.per_year and prior.get("per_year")
+                and candidate.per_year == prior.get("per_year")
+            )
+            candidate.rerating_trend = f"PER {prior['per']:g}→{candidate.per:g}배 상향"
+            if prior.get("per_year") and candidate.per_year and not same_year:
+                candidate.rerating_kind = "기준연도변경"  # 진짜 re-rating 아닐 수 있음
+                candidate.rerating_trend += f" (기준 {prior.get('per_year')}→{candidate.per_year})"
+            else:
+                # EPS 변화와 비교해 멀티플/실적 분해
+                if prior.get("eps") and candidate.eps and candidate.eps > prior["eps"] * 1.03:
+                    candidate.rerating_kind = "혼합"  # 멀티플↑ + EPS↑
+                else:
+                    candidate.rerating_kind = "멀티플"  # 순수 재평가
+
+    elif method.startswith("PBR") and candidate.pbr:
+        prior = next(
+            (r for r in sorted(past, key=lambda r: r.get("date", ""), reverse=True)
+             if str(r.get("method", "")).startswith("PBR") and r.get("pbr")),
+            None,
+        )
+        if prior and candidate.pbr > prior["pbr"]:
+            candidate.rerating_trend = f"PBR {prior['pbr']:g}→{candidate.pbr:g}배 상향"
+            candidate.rerating_kind = "멀티플"
+
+
+def count_multiple_raises(records: list[dict[str, Any]], field_name: str) -> int:
+    """이력에서 해당 배수(pbr/per)가 연속 상향된 횟수."""
+    vals = [r.get(field_name) for r in sorted(records, key=lambda r: r.get("date", "")) if r.get(field_name)]
+    raises = 0
+    for a, b in zip(vals, vals[1:]):
+        if b > a:
+            raises += 1
+    return raises
+
+
+def classify_phase(candidate: Candidate, brokers_hist: dict[str, Any]) -> tuple[str, str]:
+    """B. 빅사이클 국면 ①~⑤ 분류.
+
+    ① 턴어라운드   : BPS×PBR, PBR≈1.0, 상향 이력 없음
+    ② PBR 재평가   : BPS×PBR, Target PBR 상향 진행
+    ③ 전환(골든존) : PBR → PER/SOTP/EV 로 방식 전환
+    ④ PER 재평가   : EPS×PER, Target PER 상향 진행
+    ⑤ 후기         : PER 고배수(≥20) 또는 EPS 정체 속 PER만 상승
+    """
+    method = candidate.method
+    today = TODAY_KST.isoformat()
+    # 종목 전체(모든 증권사) 기록 합산 (오늘 기록 제외)
+    all_recs: list[dict[str, Any]] = []
+    for recs in brokers_hist.values():
+        all_recs.extend(r for r in recs if r.get("date") != today)
+
+    pbr_raises = count_multiple_raises(all_recs, "pbr")
+    per_raises = count_multiple_raises(all_recs, "per")
+
+    # '전환 직후(골든존)'는 직전 리포트가 PBR이었을 때만 — 같은 증권사 우선
+    broker_recs = [r for r in brokers_hist.get(candidate.broker, []) if r.get("date") != today]
+    ref_recs = broker_recs or all_recs
+    last_method = ""
+    if ref_recs:
+        last_method = str(max(ref_recs, key=lambda r: r.get("date", "")).get("method", ""))
+    switched = last_method.startswith("PBR") and method.startswith("PER")
+
+    if method.startswith("PER"):
+        if switched:
+            return "③", "🔄 전환(골든존)"
+        if candidate.per and candidate.per >= 20:
+            return "⑤", "⚠️ 후기(고멀티플)"
+        if per_raises >= 2:
+            return "④", "🚀 PER 재평가"
+        return "④", "🚀 PER 적용"
+    if method.startswith("PBR"):
+        if pbr_raises >= 2 or (candidate.pbr and candidate.pbr >= 1.5):
+            return "②", "📈 PBR 재평가"
+        if candidate.pbr and candidate.pbr <= 1.2:
+            return "①", "🌱 턴어라운드"
+        return "②", "📈 PBR 구간"
+    if method in {"PER/PBR 병행", "SOTP/EV"}:
+        return "③", "🔄 전환 가능"
+    return "", ""
+
+
+def compute_diffusion(candidate: Candidate, brokers_hist: dict[str, Any], window_days: int = 60) -> str:
+    """E. 증권사 간 확산도 — 최근 window_days 내 PER로 이동/상향한 증권사 수."""
+    today = TODAY_KST.isoformat()
+    per_recent: set[str] = set()
+    raised_recent: set[str] = set()
+    for bname, recs in brokers_hist.items():
+        for r in recs:
+            d = r.get("date", "")
+            within = _days_between(d, today)
+            if within is not None and within <= window_days:
+                if str(r.get("method", "")).startswith("PER"):
+                    per_recent.add(bname)
+    if candidate.broker and candidate.method.startswith("PER"):
+        per_recent.add(candidate.broker)
+    # 멀티플 상향 증권사
+    for bname, recs in brokers_hist.items():
+        if count_multiple_raises(
+            [r for r in recs if _days_between(r.get("date", ""), today) is not None
+             and _days_between(r.get("date", ""), today) <= window_days],
+            "per",
+        ) >= 1:
+            raised_recent.add(bname)
+
+    bits = []
+    if len(per_recent) >= 2:
+        bits.append(f"최근 {window_days}일 {len(per_recent)}개사 PER 적용")
+    if len(raised_recent) >= 2:
+        bits.append(f"{len(raised_recent)}개사 PER 상향")
+    return " · ".join(bits)
 
 
 def update_candidates_with_state(candidates: list[Candidate], state: dict[str, Any]) -> None:
@@ -1215,6 +1447,7 @@ def update_candidates_with_state(candidates: list[Candidate], state: dict[str, A
         brokers_hist: dict[str, Any] = stock_hist.setdefault("brokers", {})
 
         # ── ② 같은 증권사의 직전 리포트와 비교 ──────────────────────────────
+        past: list[dict[str, Any]] = []
         if candidate.broker:
             past = [
                 r for r in brokers_hist.get(candidate.broker, [])
@@ -1231,6 +1464,9 @@ def update_candidates_with_state(candidates: list[Candidate], state: dict[str, A
                     candidate.prior_target = rec.get("target", "")
                     break
 
+        # ── A. 멀티플 재평가(re-rating) 감지 (기준연도 함정 보정 포함) ────────
+        detect_rerating(candidate, past)
+
         # ── ① 교차 증권사 컨센서스: 이 종목을 PER로 보는 증권사 집합 ─────────
         per_brokers: set[str] = set()
         for bname, recs in brokers_hist.items():
@@ -1240,6 +1476,10 @@ def update_candidates_with_state(candidates: list[Candidate], state: dict[str, A
         if candidate.broker and candidate.method.startswith("PER"):
             per_brokers.add(candidate.broker)
         candidate.consensus_brokers = sorted(per_brokers)
+
+        # ── B. 국면 분류 + E. 증권사 간 확산도 ──────────────────────────────
+        candidate.phase, candidate.phase_label = classify_phase(candidate, brokers_hist)
+        candidate.diffusion = compute_diffusion(candidate, brokers_hist)
 
         # ── 상태 결정 (이력 반영) ────────────────────────────────────────────
         candidate.status, candidate.reason = decide_status_v2(candidate)

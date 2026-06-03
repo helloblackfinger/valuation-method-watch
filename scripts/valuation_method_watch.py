@@ -573,13 +573,32 @@ def _to_float(s: str) -> float:
     return float(s.replace(",", ""))
 
 
+def _parse_price(price_str: str) -> int | None:
+    """'108,000원' → 108000"""
+    if not price_str:
+        return None
+    m = re.search(r"([\d,]{4,})", price_str)
+    return _to_int(m.group(1)) if m else None
+
+
+def _within(a: int, b: int, tol: float = 0.15) -> bool:
+    """a가 b의 ±tol 범위 안에 있는지 (b 기준)."""
+    if not b:
+        return False
+    return abs(a - b) / b <= tol
+
+
 def extract_valuation_numbers(
     text: str,
+    target_price: str = "",
 ) -> tuple[int | None, float | None, int | None, float | None, int | None, int | None]:
     """본문에서 BPS·PBR배수·EPS·PER배수를 추출하고 기존/신규 목표가를 계산.
 
     반환: (bps, pbr, eps, per, old_price=BPS×PBR, new_price=EPS×PER)
-    값이 본문에 명시되지 않으면 해당 항목은 None.
+
+    ⚠️ 검증: PDF 표가 평면화되면 라벨과 무관한 숫자가 잡혀 엉뚱한 곱이 나올 수 있다.
+    그래서 계산된 EPS×PER 값이 리포트에 명시된 목표주가와 ±15% 이내로
+    일치할 때만 해당 수치를 신뢰한다. 불일치 시 EPS/PER는 폐기.
     """
     bps = pbr = eps = per = None
     old_price = new_price = None
@@ -606,11 +625,27 @@ def extract_valuation_numbers(
         except ValueError:
             per = None
 
-    # 목표가 계산 (양쪽 값이 모두 추출된 경우에만)
-    if bps and pbr:
-        old_price = round(bps * pbr)
+    target = _parse_price(target_price)
+
+    # 신규(EPS×PER): 명시 목표가와 일치할 때만 신뢰
     if eps and per:
-        new_price = round(eps * per)
+        candidate_new = round(eps * per)
+        if target and _within(candidate_new, target):
+            new_price = candidate_new
+        else:
+            # 검증 실패 → 잘못 잡힌 숫자로 간주, 폐기
+            eps = per = None
+
+    # 기존(BPS×PBR): 현재 목표가와 같으면 '기존'이 아니므로 제외,
+    # 또한 신규 목표가와 너무 비슷하면 변경 의미가 없어 제외
+    if bps and pbr:
+        candidate_old = round(bps * pbr)
+        too_close_to_target = target and _within(candidate_old, target, 0.05)
+        too_close_to_new = new_price and _within(candidate_old, new_price, 0.05)
+        if not too_close_to_target and not too_close_to_new:
+            old_price = candidate_old
+        else:
+            bps = pbr = None
 
     return bps, pbr, eps, per, old_price, new_price
 
@@ -675,7 +710,8 @@ def build_candidate(result: SearchResult, text: str) -> Candidate | None:
 
     stock_name, stock_code = extract_stock(text, result.title)
     key = state_key(stock_name, stock_code, result.url)
-    bps, pbr, eps, per, old_price, new_price = extract_valuation_numbers(text)
+    target_price = extract_target_price(text)
+    bps, pbr, eps, per, old_price, new_price = extract_valuation_numbers(text, target_price)
     return Candidate(
         key=key,
         title=result.title.strip() or stock_name or result.url,
@@ -688,7 +724,7 @@ def build_candidate(result: SearchResult, text: str) -> Candidate | None:
         broker=extract_broker(text, result.title),
         analyst=extract_analyst(text),
         report_date=extract_report_date(text),
-        target_price=extract_target_price(text),
+        target_price=target_price,
         matched_terms=matched_terms,
         source_query=result.source_query,
         source_type=result.source_type,

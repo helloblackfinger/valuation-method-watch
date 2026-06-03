@@ -203,6 +203,13 @@ class Candidate:
     matched_terms: list[str] = field(default_factory=list)
     source_query: str = ""
     source_type: str = "web"
+    # 밸류에이션 수치 (본문에서 추출되는 경우에만 채워짐)
+    bps: int | None = None          # 주당순자산 (원)
+    pbr: float | None = None        # 적용 PBR 배수
+    eps: int | None = None          # 주당순이익 (원)
+    per: float | None = None        # 적용 PER 배수
+    old_price: int | None = None    # BPS × PBR 로 계산된 기존 목표가
+    new_price: int | None = None    # EPS × PER 로 계산된 신규 목표가
 
 
 # ── HTTP 헬퍼 ────────────────────────────────────────────────────────────────
@@ -505,6 +512,56 @@ def extract_target_price(text: str) -> str:
     return ""
 
 
+def _to_int(s: str) -> int:
+    return int(s.replace(",", ""))
+
+
+def _to_float(s: str) -> float:
+    return float(s.replace(",", ""))
+
+
+def extract_valuation_numbers(
+    text: str,
+) -> tuple[int | None, float | None, int | None, float | None, int | None, int | None]:
+    """본문에서 BPS·PBR배수·EPS·PER배수를 추출하고 기존/신규 목표가를 계산.
+
+    반환: (bps, pbr, eps, per, old_price=BPS×PBR, new_price=EPS×PER)
+    값이 본문에 명시되지 않으면 해당 항목은 None.
+    """
+    bps = pbr = eps = per = None
+    old_price = new_price = None
+
+    # 주당 값 (원 단위, 3자리 이상)
+    m = re.search(r"\bBPS\b\s*(?:는|은|:|=|\()?\s*([\d,]{3,})\s*원", text)
+    if m:
+        bps = _to_int(m.group(1))
+    m = re.search(r"\bEPS\b\s*(?:는|은|:|=|\()?\s*([\d,]{3,})\s*원", text)
+    if m:
+        eps = _to_int(m.group(1))
+
+    # 배수 (PBR/PER 'N배' 또는 'N.N배')
+    m = re.search(r"(?:Target\s*|목표\s*|적정\s*|예상\s*)?PBR\s*([\d.]{1,5})\s*배", text)
+    if m:
+        try:
+            pbr = _to_float(m.group(1))
+        except ValueError:
+            pbr = None
+    m = re.search(r"(?:Target\s*|목표\s*|적정\s*|예상\s*)?PER\s*([\d.]{1,5})\s*배", text)
+    if m:
+        try:
+            per = _to_float(m.group(1))
+        except ValueError:
+            per = None
+
+    # 목표가 계산 (양쪽 값이 모두 추출된 경우에만)
+    if bps and pbr:
+        old_price = round(bps * pbr)
+    if eps and per:
+        new_price = round(eps * per)
+
+    return bps, pbr, eps, per, old_price, new_price
+
+
 def extract_report_date(text: str) -> str:
     for pattern in [
         r"(20\d{2})[.\-/년]\s*(\d{1,2})[.\-/월]\s*(\d{1,2})",
@@ -565,6 +622,7 @@ def build_candidate(result: SearchResult, text: str) -> Candidate | None:
 
     stock_name, stock_code = extract_stock(text, result.title)
     key = state_key(stock_name, stock_code, result.url)
+    bps, pbr, eps, per, old_price, new_price = extract_valuation_numbers(text)
     return Candidate(
         key=key,
         title=result.title.strip() or stock_name or result.url,
@@ -581,6 +639,8 @@ def build_candidate(result: SearchResult, text: str) -> Candidate | None:
         matched_terms=matched_terms,
         source_query=result.source_query,
         source_type=result.source_type,
+        bps=bps, pbr=pbr, eps=eps, per=per,
+        old_price=old_price, new_price=new_price,
     )
 
 
@@ -646,48 +706,98 @@ def search_provider_name() -> str:
     return "not configured"
 
 
+# ── 밸류에이션 수치 포맷 ──────────────────────────────────────────────────────
+
+def valuation_breakdown(c: Candidate) -> str:
+    """BPS×PBR → EPS×PER 수치 변경 내역을 한 줄로 포맷. 값이 없으면 빈 문자열."""
+    old_part = ""
+    new_part = ""
+
+    if c.bps and c.pbr:
+        old_part = f"BPS {c.bps:,}원 × PBR {c.pbr:g}배"
+        if c.old_price:
+            old_part += f" = {c.old_price:,}원"
+    if c.eps and c.per:
+        new_part = f"EPS {c.eps:,}원 × PER {c.per:g}배"
+        if c.new_price:
+            new_part += f" = {c.new_price:,}원"
+
+    if old_part and new_part:
+        return f"{old_part}  →  {new_part}"
+    if new_part:
+        return new_part
+    if old_part:
+        return old_part
+    return ""
+
+
 # ── 텔레그램 발송 ────────────────────────────────────────────────────────────
 
+def tg_escape(text: str) -> str:
+    """텔레그램 HTML 모드용 특수문자 이스케이프."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def dedupe_by_stock(candidates: list[Candidate]) -> list[Candidate]:
+    """같은 종목은 첫 번째(신뢰도 높은) 항목만 남김."""
+    seen: set[str] = set()
+    unique: list[Candidate] = []
+    for c in candidates:
+        name = c.stock_name or c.title
+        if name in seen:
+            continue
+        seen.add(name)
+        unique.append(c)
+    return unique
+
+
+def tg_line(c: Candidate) -> str:
+    """한 줄(+수치) 요약: • <a>종목</a> — 증권사 · 목표가
+    수치가 추출되면 다음 줄에 BPS×PBR → EPS×PER 변경 내역 추가."""
+    name = (c.stock_name or c.title)[:24]
+    bits = []
+    if c.broker:
+        bits.append(c.broker)
+    if c.target_price:
+        bits.append(c.target_price)
+    suffix = f" — {' · '.join(bits)}" if bits else ""
+    line = f"• <a href='{c.url}'>{tg_escape(name)}</a>{tg_escape(suffix)}"
+
+    breakdown = valuation_breakdown(c)
+    if breakdown:
+        line += f"\n   ↳ {tg_escape(breakdown)}"
+    return line
+
+
 def send_telegram(bot_token: str, chat_id: str, candidates: list[Candidate]) -> None:
-    confirmed = [c for c in candidates if c.status == "확인"]
-    watch = [c for c in candidates if c.status == "후보"]
+    confirmed = dedupe_by_stock([c for c in candidates if c.status == "확인"])
+    watch = dedupe_by_stock([c for c in candidates if c.status == "후보"])
 
     if not confirmed and not watch:
         return
 
-    lines = [f"📊 <b>밸류에이션 전환 감지 — {TODAY_KST.isoformat()}</b>"]
+    lines = [
+        f"📊 <b>밸류에이션 전환 — {TODAY_KST.isoformat()}</b>",
+        f"확인 {len(confirmed)} · 후보 {len(watch)}",
+    ]
 
     if confirmed:
-        lines.append(f"\n🔴 <b>확인된 전환 ({len(confirmed)}건)</b>")
-        for c in confirmed[:10]:
-            identity = c.stock_name or c.title
-            if c.stock_code:
-                identity += f" ({c.stock_code})"
-            detail = []
-            if c.broker:
-                detail.append(c.broker)
-            if c.target_price:
-                detail.append(f"목표가 {c.target_price}")
-            if c.method:
-                detail.append(f"→ {c.method}")
-            lines.append(f"• <b>{identity}</b>  {' | '.join(detail)}")
-            if c.matched_terms:
-                lines.append(f"  단서: {', '.join(c.matched_terms[:4])}")
-            lines.append(f"  <a href='{c.url}'>{c.title[:50]}</a>")
+        lines.append("\n🔴 <b>확인된 전환</b>")
+        lines.extend(tg_line(c) for c in confirmed[:8])
 
     if watch:
-        lines.append(f"\n🟡 <b>후보 ({len(watch)}건)</b>")
-        for c in watch[:10]:
-            identity = c.stock_name or c.title
-            if c.stock_code:
-                identity += f" ({c.stock_code})"
-            detail = []
-            if c.broker:
-                detail.append(c.broker)
-            if c.target_price:
-                detail.append(f"목표가 {c.target_price}")
-            lines.append(f"• <b>{identity}</b>  {' | '.join(detail)}")
-            lines.append(f"  <a href='{c.url}'>{c.title[:50]}</a>")
+        shown = watch[:8]
+        more = len(watch) - len(shown)
+        header = "\n🟡 <b>후보</b>" + (f" (상위 {len(shown)})" if more > 0 else "")
+        lines.append(header)
+        lines.extend(tg_line(c) for c in shown)
+        if more > 0:
+            lines.append(f"… 외 {more}건")
+
+    lines.append(
+        "\n📄 <a href='https://github.com/helloblackfinger/"
+        f"valuation-method-watch/blob/main/reports/{TODAY_KST.isoformat()}.md'>전체 리포트</a>"
+    )
 
     text = "\n".join(lines)
 
@@ -698,7 +808,7 @@ def send_telegram(bot_token: str, chat_id: str, candidates: list[Candidate]) -> 
                 "chat_id": chat_id,
                 "text": text,
                 "parse_mode": "HTML",
-                "disable_web_page_preview": False,
+                "disable_web_page_preview": True,
             },
             timeout=15,
         )
@@ -780,6 +890,9 @@ def render_candidate(c: Candidate) -> str:
         lines.append(f"- 발간일/감지일: {c.report_date}")
     if c.target_price:
         lines.append(f"- 목표가: {escape_md(c.target_price)}")
+    breakdown = valuation_breakdown(c)
+    if breakdown:
+        lines.append(f"- 산식 수치: {escape_md(breakdown)}")
     lines.append(f"- 전환 판단: {escape_md(c.reason)}")
     if c.matched_terms:
         lines.append(f"- 감지 단서: {escape_md(', '.join(c.matched_terms[:10]))}")

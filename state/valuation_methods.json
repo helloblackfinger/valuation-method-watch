@@ -1,10 +1,10 @@
 {
-  "last_run_at": "2026-06-03T22:28:30+09:00",
+  "last_run_at": "2026-06-03T22:40:38+09:00",
   "seen_urls": {},
   "stocks": {
     "001450": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "001450",
       "stock_name": "w.daishin.com Issue Comment 현대해상",
@@ -24,7 +24,7 @@
     },
     "006260": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PBR",
       "stock_code": "006260",
       "stock_name": "LS",
@@ -34,7 +34,7 @@
     },
     "006730": {
       "broker": "iM증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "006730",
       "stock_name": "서부T&D",
@@ -54,7 +54,7 @@
     },
     "011070": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "011070",
       "stock_name": "LG이노텍",
@@ -64,7 +64,7 @@
     },
     "012330": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "012330",
       "stock_name": "현대모비스",
@@ -82,9 +82,19 @@
       "title": "[PDF] SK텔레콤 (017670) - 2013년 0월 0일",
       "url": "https://www.hanaw.com/main/research/research/download.cmd?bbsSeq=1287365&attachFileSeq=1&bbsId=&dbType=&bbsCd=2224"
     },
+    "01e54e43b162": {
+      "broker": "",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "PER",
+      "stock_code": "",
+      "stock_name": "투자지표",
+      "target_price": "1,000원",
+      "title": "투자지표 - 초이스스탁",
+      "url": "https://www.choicestock.co.kr/search/invest/COPL"
+    },
     "020000": {
       "broker": "",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "020000",
       "stock_name": "한섬",
@@ -94,7 +104,7 @@
     },
     "032640": {
       "broker": "하나증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "032640",
       "stock_name": "LG유플러스",
@@ -104,7 +114,7 @@
     },
     "033270": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "033270",
       "stock_name": "유나이티드제약",
@@ -113,18 +123,18 @@
       "url": "https://stock.pstatic.net/stock-research/company/18/20260529_company_522846000.pdf"
     },
     "035420": {
-      "broker": "키움증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
-      "method": "SOTP/EV",
+      "broker": "하나증권",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "PER",
       "stock_code": "035420",
-      "stock_name": ".2 -19.4 -23.6 Price Trend NAVER",
-      "target_price": "250,000원",
-      "title": "[PDF] BUY(Upgrade) 전략적 판단 필요 - 키움증권",
-      "url": "https://bbn.kiwoom.com/rfCR12129"
+      "stock_name": "CP 2026년 5월 29일 NAVER",
+      "target_price": "350,000원",
+      "title": "[PDF] 2007년 10월 24일 (수) - 하나증권",
+      "url": "https://m.hanaw.com:444/main/research/research/download.cmd?bbsSeq=1287406&attachFileSeq=1&bbsId=&dbType=&bbsCd=2206"
     },
     "036cceb56b42": {
       "broker": "",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "LS마린솔루션 투자분석 2026. 05. 29",
@@ -134,7 +144,7 @@
     },
     "042520": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "042520",
       "stock_name": "한스바이오메드",
@@ -154,7 +164,7 @@
     },
     "051900": {
       "broker": "유진투자증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "051900",
       "stock_name": "LG생활건강",
@@ -162,9 +172,19 @@
       "title": "LG생활건강(051900) 1Q26 Review: 여명 직전 — 유진투자증권 / 2026-05-29",
       "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649783"
     },
+    "061090": {
+      "broker": "하나증권",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "SOTP/EV",
+      "stock_code": "061090",
+      "stock_name": "세나테크놀로지",
+      "target_price": "80,000원",
+      "title": "[PDF] 세나테크놀로지 (061090)",
+      "url": "https://stock.mk.co.kr/uploads/20260529/1780032741_2c5a0700c956fb45f15b.pdf"
+    },
     "064350": {
       "broker": "LS증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "064350",
       "stock_name": "현대로템",
@@ -174,17 +194,17 @@
     },
     "081180": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "081180",
       "stock_name": "쎄크",
       "target_price": "",
-      "title": "쎄크(081180) 미세화될수록 내면 검사가 중요해진다! — 유안타증권 / 2026-05-29",
-      "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649762"
+      "title": "[PDF] 쎄크 (081180)",
+      "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EC%8E%84%ED%81%AC%EB%AF%B8%EC%84%B8%ED%99%94%EB%90%A0%EC%88%98%EB%A1%9D20260529%EC%9C%A0%EC%95%88%ED%83%80%EC%A6%9D%EA%B6%8C.pdf"
     },
     "085910": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "085910",
       "stock_name": "네오티스",
@@ -194,7 +214,7 @@
     },
     "090430": {
       "broker": "유진투자증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "090430",
       "stock_name": "아모레퍼시픽",
@@ -204,7 +224,7 @@
     },
     "094360": {
       "broker": "IBK투자증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "094360",
       "stock_name": "칩스앤미디어",
@@ -214,7 +234,7 @@
     },
     "1026fcd56eb5": {
       "broker": "",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "",
       "stock_name": "대한방직",
@@ -234,7 +254,7 @@
     },
     "128940": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "128940",
       "stock_name": "한미약품",
@@ -244,7 +264,7 @@
     },
     "129920": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "129920",
       "stock_name": "대성하이텍",
@@ -254,7 +274,7 @@
     },
     "181710": {
       "broker": "KB증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "181710",
       "stock_name": "프라임경제 KB증권은 2일 NHN",
@@ -264,13 +284,13 @@
     },
     "196170": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "196170",
-      "stock_name": "알테오젠",
+      "stock_name": "6.02 www.daishin.com NDR 후기 알테오젠",
       "target_price": "500,000원",
-      "title": "알테오젠(196170) 특허 리스크 Down, 신규 딜 가능성 Up — 대신증권 / 2026-06-02",
-      "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649839"
+      "title": "[PDF] 알테오젠 특허 리스크 Down, 신규 딜 가능성 Up",
+      "url": "https://stock.pstatic.net/stock-research/company/15/20260602_company_221723000.pdf"
     },
     "1cec2e016ad6": {
       "broker": "",
@@ -284,7 +304,7 @@
     },
     "214450": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "214450",
       "stock_name": "파마리서치",
@@ -304,7 +324,7 @@
     },
     "248070": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "248070",
       "stock_name": "솔루엠",
@@ -314,7 +334,7 @@
     },
     "263860": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "263860",
       "stock_name": "지니언스",
@@ -344,7 +364,7 @@
     },
     "299030": {
       "broker": "유진투자증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "299030",
       "stock_name": "하나기술",
@@ -374,7 +394,7 @@
     },
     "31e8a60847ab": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "대신증권2우B 투자분석 2026. 05. 31",
@@ -384,7 +404,7 @@
     },
     "330860": {
       "broker": "LS증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PBR",
       "stock_code": "330860",
       "stock_name": "네패스아크",
@@ -394,7 +414,7 @@
     },
     "356860": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "356860",
       "stock_name": "티엘비",
@@ -414,7 +434,7 @@
     },
     "383310": {
       "broker": "",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "383310",
       "stock_name": "VESTMENT & SECURITIES 4 에코프로에이치엔",
@@ -424,12 +444,12 @@
     },
     "38cbc1875fa7": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "삼성전자, SK하이닉스, 카카오",
       "target_price": "",
-      "title": "“40만전자·300만닉스도 낮다”…반도체 투톱에 베팅 늘린 증권가 < 금융 < 경제 < 기사본문 - 뉴시안",
+      "title": "“40만전자·300만닉스도 낮다”…반도체 투톱에 베팅 늘린 증권가 - 뉴시안",
       "url": "http://www.newsian.co.kr/news/articleView.html?idxno=90406"
     },
     "39d1ffb02397": {
@@ -442,15 +462,25 @@
       "title": "[PDF] 반도체/장비",
       "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EB%B0%98%EB%8F%84%EC%B2%B42026%EB%85%8420260602%EC%9C%A0%EC%95%88%ED%83%80%EC%A6%9D%EA%B6%8C.pdf"
     },
+    "4995c40d9428": {
+      "broker": "",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "PER",
+      "stock_code": "",
+      "stock_name": "KCTC 투자분석 2026. 06. 02",
+      "target_price": "",
+      "title": "KCTC 투자분석 2026. 06. 02 - 주달",
+      "url": "https://www.judal.co.kr?view=stockAI&shareToken=ntHdeKVnBcxOwfgt"
+    },
     "50f0690e9a49": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "메리츠證 “LG이노텍, 고객사 수요가 스마트폰 업황 상회⋯",
       "target_price": "",
-      "title": "메리츠證 “LG이노텍, 고객사 수요가 스마트폰 업황 상회⋯구조적 성장 국면”",
-      "url": "https://v.daum.net/v/p1uIP6ztTn?f=p"
+      "title": "메리츠證 “LG이노텍, 고객사 수요가 스마트폰 업황 상회⋯구조적 성장 ...",
+      "url": "https://www.etoday.co.kr/news/view/2588845"
     },
     "56562a3447ef": {
       "broker": "",
@@ -464,7 +494,7 @@
     },
     "5f454560f5bc": {
       "broker": "현대차증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "",
       "stock_name": "현대차증권",
@@ -474,7 +504,7 @@
     },
     "63d9999d5fe1": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "“61만전자·400만닉스 간다”…SK증권, 목표주가 대폭 ",
@@ -504,17 +534,17 @@
     },
     "7b10d8485e01": {
       "broker": "다올투자증권",
-      "last_seen_at": "2026-06-03T17:15:40+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "현대차",
       "target_price": "",
       "title": "현대차, 보스턴다이나믹스 모멘텀에 재평가 전망…목표가 상향-다올투자증권 - 머니투데이",
-      "url": "https://www.mt.co.kr/amp/stock/2026/06/02/2026060208451461696"
+      "url": "https://www.mt.co.kr/stock/2026/06/02/2026060208451461696"
     },
     "7e58dc9520b1": {
       "broker": "",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "우리기술 투자분석 2026. 06. 02",
@@ -532,19 +562,39 @@
       "title": "퍼스트 커뮤니티, 1분기 핵심순이익 675만 달러..전년비 38%↑ | 뉴스 - 초이스스탁US",
       "url": "https://www.choicestock.co.kr/stock/news_view/147786"
     },
+    "8d91f33cb8a0": {
+      "broker": "",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "PER",
+      "stock_code": "",
+      "stock_name": "솔라뱅크, 뉴욕 버팔로 태양광 프로젝트서 최대 157만 달",
+      "target_price": "1,000원",
+      "title": "솔라뱅크, 뉴욕 버팔로 태양광 프로젝트서 최대 157만 달러 인센티브 ...",
+      "url": "https://www.choicestock.co.kr/stock/news_view/149047?bu="
+    },
+    "9945debacfc7": {
+      "broker": "",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "PER",
+      "stock_code": "",
+      "stock_name": "레드와이어, 제퍼리스 투자의견 '보유'로 하향..목표가는 ",
+      "target_price": "1,000원",
+      "title": "레드와이어, 제퍼리스 투자의견 '보유'로 하향..목표가는 24달러 상향 | 뉴스 - 초이스스탁US",
+      "url": "https://www.choicestock.co.kr/stock/news_view/148382?bu="
+    },
     "999465f2ff8b": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "삼성전자, SK하이닉스",
       "target_price": "",
-      "title": "“61만전자·400만닉스 간다”…SK증권, 목표주가 대폭 상향 [종목Pick] - 헤럴드경제",
+      "title": "“61만전자·400만닉스 간다”…SK증권, 목표주가 대폭 상향 [종목Pick]",
       "url": "https://biz.heraldcorp.com/article/10760615"
     },
     "9d960a51f8a1": {
       "broker": "",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "두산우 투자분석 2026. 05. 30",
@@ -574,17 +624,17 @@
     },
     "a98dd8648fe2": {
       "broker": "",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "레인보우로보틱스 투자분석 2026. 05. 29",
       "target_price": "",
-      "title": "레인보우로보틱스 투자분석 2026. 05. 29",
+      "title": "레인보우로보틱스 투자분석 2026. 05. 29 - 주달",
       "url": "https://www.judal.co.kr?view=stockAI&shareToken=VtBpc6OLpaFLwgwH"
     },
     "b8423e84ad13": {
       "broker": "한국투자증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "카카오",
@@ -594,13 +644,13 @@
     },
     "bbb02cb4a0a1": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-03T22:28:30+09:00",
-      "method": "SOTP/EV",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "PER",
       "stock_code": "",
       "stock_name": "삼성전자",
-      "target_price": "17,900원",
-      "title": "반도체 수율 개선 투자의 핵심 수혜주 — SK증권 / 2026-05-29",
-      "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649773"
+      "target_price": "",
+      "title": "삼성전자 메타 제치고 글로벌 시총 10위 올랐다 - 한국경제",
+      "url": "https://www.hankyung.com/amp/202606023027i"
     },
     "cc1dfae1ffd2": {
       "broker": "한국투자증권",
@@ -634,17 +684,37 @@
     },
     "e94e901a10e4": {
       "broker": "미래에셋증권",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "SOTP/EV",
       "stock_code": "",
       "stock_name": "\"이젠 1만피가 뉴노멀?\"…증권사들 잇단 '코스피 1만' ",
       "target_price": "",
-      "title": "\"이젠 1만피가 뉴노멀?\"…증권사들 잇단 '코스피 1만' 전망",
+      "title": "\"이젠 1만피가 뉴노멀?\"…증권사들 잇단 '코스피 1만' 전망 - Daum",
       "url": "https://v.daum.net/v/pgPvsFTsAZ"
+    },
+    "f0d1b09d8040": {
+      "broker": "",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "PER/PBR 병행",
+      "stock_code": "",
+      "stock_name": "인팩",
+      "target_price": "",
+      "title": "인팩 - 기업현황 - 기업모니터",
+      "url": "https://comp.wisereport.co.kr/samsung/company/c1010001.aspx?cmp_cd=023810"
+    },
+    "f171e972ac23": {
+      "broker": "",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
+      "method": "PER",
+      "stock_code": "",
+      "stock_name": "Novanta Tangible Equity Units(NO",
+      "target_price": "",
+      "title": "Novanta Tangible Equity Units(NOVTU) | 기업정보 - 딥서치 투자",
+      "url": "https://invest.deepsearch.com/stock/NOVTU"
     },
     "f5369d9226d8": {
       "broker": "",
-      "last_seen_at": "2026-06-03T22:23:08+09:00",
+      "last_seen_at": "2026-06-03T22:40:38+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "바클레이즈, 빅토리아 시크릿 실적 호조에 목표주가 상향 조",

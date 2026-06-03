@@ -554,10 +554,15 @@ def extract_analyst(text: str) -> str:
 
 
 def extract_target_price(text: str) -> str:
+    # 증권사마다 표현이 다름: 목표주가 / 적정주가 / 적정가치 / 적정가격 / TP
     for pattern in [
+        r"목표주가\(12M\)[^\d]{0,30}([\d,]{4,})",
         r"목표주가[^\d]{0,30}([\d,]{4,})\s*원",
         r"목표가[^\d]{0,30}([\d,]{4,})\s*원",
-        r"목표주가\(12M\)[^\d]{0,30}([\d,]{4,})",
+        r"적정주가[^\d]{0,30}([\d,]{5,})",
+        r"적정가치[^\d]{0,30}([\d,]{5,})",
+        r"적정가격[^\d]{0,30}([\d,]{5,})",
+        r"\bTP\b[^\d]{0,15}([\d,]{5,})",
     ]:
         match = re.search(pattern, text)
         if match:

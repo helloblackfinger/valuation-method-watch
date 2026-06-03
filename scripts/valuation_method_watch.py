@@ -519,12 +519,14 @@ def classify_method(text: str) -> tuple[str, str, list[str]]:
 
 def extract_stock(text: str, title: str) -> tuple[str, str]:
     combined = f"{title} {text[:10_000]}"
-    matches = re.findall(r"([가-힣A-Za-z0-9&.\- ]{2,32})\s*\((\d{6})\)", combined)
-    ignore = {"KOSPI", "KOSDAQ", "BUY", "HOLD"}
+    # 종목명은 '(코드)' 바로 앞의 공백 없는 토큰 (예: 현대해상, SK하이닉스, 서부T&D).
+    # 공백을 허용하면 앞쪽 URL·영문 잡음까지 빨려들어가므로 제외한다.
+    matches = re.findall(r"([가-힣A-Za-z0-9&.]{2,20})\s*\((\d{6})\)", combined)
+    ignore = {"KOSPI", "KOSDAQ", "BUY", "HOLD", "NR"}
     for raw_name, code in matches:
-        name = raw_name.strip(" -_/|")
+        name = raw_name.strip(" -_/|.")
         if name and name.upper() not in ignore and not name.isdigit():
-            return name[-32:].strip(), code
+            return name[:20].strip(), code
 
     known_scope = f"{title} {text[:600]}"
     known_matches = []

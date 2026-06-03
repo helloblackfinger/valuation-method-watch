@@ -852,8 +852,7 @@ def dedupe_by_stock(candidates: list[Candidate]) -> list[Candidate]:
 
 
 def tg_line(c: Candidate) -> str:
-    """한 줄(+수치) 요약: • <a>종목</a> — 증권사 · 목표가
-    수치가 추출되면 다음 줄에 BPS×PBR → EPS×PER 변경 내역 추가."""
+    """후보용 한 줄(+수치) 요약: • <a>종목</a> — 증권사 · 목표가"""
     name = (c.stock_name or c.title)[:24]
     bits = []
     if c.broker:
@@ -867,6 +866,42 @@ def tg_line(c: Candidate) -> str:
     if breakdown:
         line += f"\n   ↳ {tg_escape(breakdown)}"
     return line
+
+
+def tg_confirmed_line(c: Candidate) -> str:
+    """확인된 전환용 포맷:
+        • 종목 - 증권사 날짜
+          ㄴ BPS x원 × PBR x배 = 목표가
+          ㄴ EPS x원 × PER x배 = 목표가
+    수치가 본문에 없는 쪽(ㄴ)은 생략된다.
+    """
+    name = (c.stock_name or c.title)[:24]
+    head_bits = []
+    if c.broker:
+        head_bits.append(c.broker)
+    if c.report_date:
+        head_bits.append(c.report_date)
+    head = f" - {tg_escape(' '.join(head_bits))}" if head_bits else ""
+    lines = [f"• <a href='{c.url}'>{tg_escape(name)}</a>{head}"]
+
+    # 기존 산식: BPS × PBR
+    if c.bps and c.pbr:
+        old = f"BPS {c.bps:,}원 × PBR {c.pbr:g}배"
+        if c.old_price:
+            old += f" = {c.old_price:,}원"
+        lines.append(f"   ㄴ 기존 {tg_escape(old)}")
+    # 신규 산식: EPS × PER
+    if c.eps and c.per:
+        new = f"EPS {c.eps:,}원 × PER {c.per:g}배"
+        if c.new_price:
+            new += f" = {c.new_price:,}원"
+        lines.append(f"   ㄴ 신규 {tg_escape(new)}")
+
+    # 양쪽 수치가 모두 없으면 목표가만이라도 표시
+    if not (c.bps and c.pbr) and not (c.eps and c.per) and c.target_price:
+        lines.append(f"   ㄴ 목표가 {tg_escape(c.target_price)}")
+
+    return "\n".join(lines)
 
 
 def send_telegram(bot_token: str, chat_id: str, candidates: list[Candidate]) -> None:
@@ -883,7 +918,7 @@ def send_telegram(bot_token: str, chat_id: str, candidates: list[Candidate]) -> 
 
     if confirmed:
         lines.append("\n🔴 <b>확인된 전환</b>")
-        lines.extend(tg_line(c) for c in confirmed[:8])
+        lines.extend(tg_confirmed_line(c) for c in confirmed[:8])
 
     if watch:
         shown = watch[:8]

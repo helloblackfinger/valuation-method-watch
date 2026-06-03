@@ -210,6 +210,15 @@ class Candidate:
     per: float | None = None        # 적용 PER 배수
     old_price: int | None = None    # BPS × PBR 로 계산된 기존 목표가
     new_price: int | None = None    # EPS × PER 로 계산된 신규 목표가
+    # 과거 이력 비교 결과 (같은 종목·증권사의 직전 PBR 리포트에서 복원)
+    prior_method: str = ""          # 같은 증권사의 직전 산식
+    prior_date: str = ""            # 직전 리포트 날짜
+    prior_bps: int | None = None
+    prior_pbr: float | None = None
+    prior_old_price: int | None = None
+    prior_target: str = ""
+    # 교차 증권사 컨센서스
+    consensus_brokers: list[str] = field(default_factory=list)  # 현재 PER로 본 증권사들
 
 
 # ── HTTP 헬퍼 ────────────────────────────────────────────────────────────────
@@ -706,6 +715,45 @@ def decide_status(method: str, reason: str, previous_method: str) -> tuple[str, 
     return "관찰", f"현재 방식은 {method}"
 
 
+def decide_status_v2(c: "Candidate") -> tuple[str, str]:
+    """과거 이력(②)·교차 증권사(①)를 반영한 상태 판정.
+
+    우선순위:
+    1. 같은 증권사가 과거 PBR → 현재 PER  → 확인 (가장 강력, 기존 수치까지 복원됨)
+    2. 본문에 명시적 전환 표현                 → 확인
+    3. 종목 단위 직전 기록 PBR → 현재 PER      → 확인
+    4. 복수 증권사가 PER로 수렴               → 후보(컨센서스)
+    5. PER/PBR 병행·SOTP·PER 신호            → 후보
+    6. 그 외                                  → 관찰
+    """
+    method = c.method
+
+    # 1. 같은 증권사 과거 PBR → 현재 PER
+    if c.prior_method.startswith("PBR") and method.startswith("PER"):
+        date_part = f" ({c.prior_date})" if c.prior_date else ""
+        return "확인", f"동일 증권사 직전 {c.prior_method}{date_part} → 현재 {method}로 전환"
+
+    # 2. 본문 명시적 전환
+    if c.reason == "explicit_switch":
+        return "확인", "본문에 PBR→PER 전환 표현이 감지됨"
+
+    # 3. 종목 단위 직전 기록 비교
+    if c.previous_method.startswith("PBR") and method.startswith("PER"):
+        return "확인", f"직전 방식 {c.previous_method} → 현재 {method}로 변경"
+
+    # 4. 교차 증권사 컨센서스 (2곳 이상 PER)
+    if method.startswith("PER") and len(c.consensus_brokers) >= 2:
+        return "후보", f"{len(c.consensus_brokers)}개 증권사가 PER로 수렴 ({', '.join(c.consensus_brokers[:4])})"
+
+    # 5. 병행·SOTP·PER 단일 신호
+    if method in {"PER/PBR 병행", "SOTP/EV"}:
+        return "후보", f"현재 방식이 {method}로 감지되어 전환 가능성 있음"
+    if method.startswith("PER"):
+        return "후보", "PER 산정 신호가 강하지만 이전 PBR 기록은 없음"
+
+    return "관찰", f"현재 방식은 {method}"
+
+
 # ── 후보 빌드 ────────────────────────────────────────────────────────────────
 
 def build_candidate(result: SearchResult, text: str) -> Candidate | None:
@@ -871,9 +919,10 @@ def tg_line(c: Candidate) -> str:
 def tg_confirmed_line(c: Candidate) -> str:
     """확인된 전환용 포맷:
         • 종목 - 증권사 날짜
-          ㄴ BPS x원 × PBR x배 = 목표가
-          ㄴ EPS x원 × PER x배 = 목표가
-    수치가 본문에 없는 쪽(ㄴ)은 생략된다.
+          ㄴ 기존 BPS x원 × PBR x배 = 목표가   (현재 리포트 또는 과거 이력에서 복원)
+          ㄴ 신규 EPS x원 × PER x배 = 목표가
+          ㄴ 합의 N개 증권사 PER 적용           (2곳 이상일 때)
+    수치가 없는 쪽(ㄴ)은 생략된다.
     """
     name = (c.stock_name or c.title)[:24]
     head_bits = []
@@ -884,22 +933,33 @@ def tg_confirmed_line(c: Candidate) -> str:
     head = f" - {tg_escape(' '.join(head_bits))}" if head_bits else ""
     lines = [f"• <a href='{c.url}'>{tg_escape(name)}</a>{head}"]
 
-    # 기존 산식: BPS × PBR
-    if c.bps and c.pbr:
-        old = f"BPS {c.bps:,}원 × PBR {c.pbr:g}배"
-        if c.old_price:
-            old += f" = {c.old_price:,}원"
-        lines.append(f"   ㄴ 기존 {tg_escape(old)}")
+    # 기존 산식: 현재 리포트 우선, 없으면 과거 이력에서 복원
+    use_bps = c.bps if c.bps else c.prior_bps
+    use_pbr = c.pbr if c.pbr else c.prior_pbr
+    use_old = c.old_price if c.old_price else c.prior_old_price
+    if use_bps and use_pbr:
+        old = f"BPS {use_bps:,}원 × PBR {use_pbr:g}배"
+        if use_old:
+            old += f" = {use_old:,}원"
+        src = f" [{c.prior_date} 기록]" if (not c.bps and c.prior_date) else ""
+        lines.append(f"   ㄴ 기존 {tg_escape(old + src)}")
+    elif c.prior_method and c.prior_target:
+        # 옛 배수는 없어도 직전 목표가는 보여줌
+        d = f" ({c.prior_date})" if c.prior_date else ""
+        lines.append(f"   ㄴ 기존 {tg_escape(c.prior_method)} 방식, 목표가 {tg_escape(c.prior_target)}{d}")
+
     # 신규 산식: EPS × PER
     if c.eps and c.per:
         new = f"EPS {c.eps:,}원 × PER {c.per:g}배"
         if c.new_price:
             new += f" = {c.new_price:,}원"
         lines.append(f"   ㄴ 신규 {tg_escape(new)}")
+    elif c.target_price:
+        lines.append(f"   ㄴ 신규 목표가 {tg_escape(c.target_price)}")
 
-    # 양쪽 수치가 모두 없으면 목표가만이라도 표시
-    if not (c.bps and c.pbr) and not (c.eps and c.per) and c.target_price:
-        lines.append(f"   ㄴ 목표가 {tg_escape(c.target_price)}")
+    # 교차 증권사 컨센서스
+    if len(c.consensus_brokers) >= 2:
+        lines.append(f"   ㄴ 합의 {len(c.consensus_brokers)}개 증권사 PER 적용")
 
     return "\n".join(lines)
 
@@ -1032,6 +1092,16 @@ def render_candidate(c: Candidate) -> str:
     breakdown = valuation_breakdown(c)
     if breakdown:
         lines.append(f"- 산식 수치: {escape_md(breakdown)}")
+    # 과거 이력에서 복원한 기존 산식 (현재 리포트에 없을 때)
+    if not (c.bps and c.pbr) and c.prior_bps and c.prior_pbr:
+        old = f"BPS {c.prior_bps:,}원 × PBR {c.prior_pbr:g}배"
+        if c.prior_old_price:
+            old += f" = {c.prior_old_price:,}원"
+        lines.append(f"- 기존 산식(과거 {c.prior_date}): {escape_md(old)}")
+    elif c.prior_method and c.prior_target:
+        lines.append(f"- 기존 산식(과거 {c.prior_date}): {escape_md(c.prior_method)} 방식, 목표가 {escape_md(c.prior_target)}")
+    if len(c.consensus_brokers) >= 2:
+        lines.append(f"- 증권사 합의: {len(c.consensus_brokers)}곳 PER 적용 ({escape_md(', '.join(c.consensus_brokers[:6]))})")
     lines.append(f"- 전환 판단: {escape_md(c.reason)}")
     if c.matched_terms:
         lines.append(f"- 감지 단서: {escape_md(', '.join(c.matched_terms[:10]))}")
@@ -1106,16 +1176,80 @@ def render_report(
     return "\n".join(parts).strip() + "\n"
 
 
+def _snapshot(c: Candidate, date: str) -> dict[str, Any]:
+    """이력에 저장할 리포트 스냅샷."""
+    return {
+        "date": date or TODAY_KST.isoformat(),
+        "method": c.method,
+        "bps": c.bps, "pbr": c.pbr,
+        "eps": c.eps, "per": c.per,
+        "old_price": c.old_price, "new_price": c.new_price,
+        "target": c.target_price,
+        "url": c.url,
+    }
+
+
 def update_candidates_with_state(candidates: list[Candidate], state: dict[str, Any]) -> None:
+    """과거 이력 비교(②) + 교차 증권사 종합(①)을 수행하고 상태를 갱신한다.
+
+    state["history"][stock_key] = {
+        "stock_name": ...,
+        "brokers": { "<증권사>": [snapshot, ...] }
+    }
+    """
     stocks = state.setdefault("stocks", {})
+    history = state.setdefault("history", {})
     now = dt.datetime.now(KST).isoformat(timespec="seconds")
+    today = TODAY_KST.isoformat()
 
     for candidate in candidates:
         previous = stocks.get(candidate.key, {})
         candidate.previous_method = previous.get("method", "")
-        candidate.status, candidate.reason = decide_status(
-            candidate.method, candidate.reason, candidate.previous_method,
+
+        stock_hist = history.setdefault(
+            candidate.key, {"stock_name": candidate.stock_name, "brokers": {}}
         )
+        stock_hist["stock_name"] = candidate.stock_name or stock_hist.get("stock_name", "")
+        brokers_hist: dict[str, Any] = stock_hist.setdefault("brokers", {})
+
+        # ── ② 같은 증권사의 직전 리포트와 비교 ──────────────────────────────
+        if candidate.broker:
+            past = [
+                r for r in brokers_hist.get(candidate.broker, [])
+                if r.get("date") != today  # 오늘 동일 리포트는 제외
+            ]
+            # 가장 최근의 'PBR 계열' 리포트를 찾아 기존 산식 복원
+            for rec in sorted(past, key=lambda r: r.get("date", ""), reverse=True):
+                if str(rec.get("method", "")).startswith("PBR"):
+                    candidate.prior_method = rec.get("method", "")
+                    candidate.prior_date = rec.get("date", "")
+                    candidate.prior_bps = rec.get("bps")
+                    candidate.prior_pbr = rec.get("pbr")
+                    candidate.prior_old_price = rec.get("old_price")
+                    candidate.prior_target = rec.get("target", "")
+                    break
+
+        # ── ① 교차 증권사 컨센서스: 이 종목을 PER로 보는 증권사 집합 ─────────
+        per_brokers: set[str] = set()
+        for bname, recs in brokers_hist.items():
+            latest = max(recs, key=lambda r: r.get("date", ""), default=None) if recs else None
+            if latest and str(latest.get("method", "")).startswith("PER"):
+                per_brokers.add(bname)
+        if candidate.broker and candidate.method.startswith("PER"):
+            per_brokers.add(candidate.broker)
+        candidate.consensus_brokers = sorted(per_brokers)
+
+        # ── 상태 결정 (이력 반영) ────────────────────────────────────────────
+        candidate.status, candidate.reason = decide_status_v2(candidate)
+
+        # ── 오늘 스냅샷을 이력에 기록 (증권사별) ─────────────────────────────
+        if candidate.broker:
+            recs = brokers_hist.setdefault(candidate.broker, [])
+            recs[:] = [r for r in recs if r.get("date") != today]  # 같은 날 중복 제거
+            recs.append(_snapshot(candidate, candidate.report_date))
+            recs.sort(key=lambda r: r.get("date", ""))
+            del recs[:-12]  # 증권사당 최근 12건만 유지
+
         stocks[candidate.key] = {
             "stock_name": candidate.stock_name,
             "stock_code": candidate.stock_code,

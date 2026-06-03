@@ -113,6 +113,65 @@ SOTP_PATTERNS = [
     r"SOTP", r"사업부별\s*가치", r"가치\s*합산", r"EV/EBITDA",
 ]
 
+# ── 도메인 필터 ──────────────────────────────────────────────────────────────
+
+# 오래된 개인 글·백과사전·블로그 등 신뢰도 낮은 출처 (부분 일치)
+NOISE_DOMAINS = {
+    "namu.wiki", "wikipedia.org", "brunch.co.kr", "tistory.com",
+    "blog.naver.com", "m.blog.naver.com", "blog.daum.net",
+    "cafe.naver.com", "cafe.daum.net", "post.naver.com",
+    "dcinside.com", "fmkorea.com", "clien.net", "ppomppu.co.kr",
+    "youtube.com", "youtu.be", "facebook.com", "instagram.com",
+    "namu.news", "wikidocs.net", "slideshare.net", "scribd.com",
+}
+
+# 신뢰 가능한 증권사·언론·금융 포털 (부분 일치) — 가점 및 우선순위
+TRUSTED_DOMAINS = {
+    # 증권사
+    "miraeasset.com", "samsungpop.com", "kbsec.com", "nhqv.com",
+    "shinhansec.com", "hanaw.com", "truefriend.com", "kiwoom.com",
+    "imfnsec.com", "daishin.com", "meritz.co.kr", "ls-sec.co.kr",
+    "eugenefn.com", "hanwhawm.com", "ibks.com", "db-fi.com",
+    "iprovest.com", "bnkfn.co.kr", "hi-ib.com", "yuanta.co.kr",
+    # 언론·포털
+    "hankyung.com", "mk.co.kr", "edaily.co.kr", "fnnews.com",
+    "mt.co.kr", "sedaily.com", "asiae.co.kr", "news.einfomax.co.kr",
+    "yna.co.kr", "newspim.com", "wowtv.co.kr", "thebell.co.kr",
+    "biz.chosun.com", "v.daum.net", "n.news.naver.com", "naver.com",
+    "infostockdaily.co.kr", "paxnet.co.kr", "wisereport.co.kr",
+}
+
+# 발간일이 이 일수보다 오래되면 제외 (날짜가 추출된 경우에만 적용)
+MAX_REPORT_AGE_DAYS = int(os.getenv("MAX_REPORT_AGE_DAYS", "30"))
+
+
+def domain_of(url: str) -> str:
+    try:
+        return (urlparse(url).netloc or "").lower().lstrip("www.")
+    except Exception:
+        return ""
+
+
+def is_noise_domain(url: str) -> bool:
+    netloc = (urlparse(url).netloc or "").lower()
+    return any(bad in netloc for bad in NOISE_DOMAINS)
+
+
+def is_trusted_domain(url: str) -> bool:
+    netloc = (urlparse(url).netloc or "").lower()
+    return any(good in netloc for good in TRUSTED_DOMAINS)
+
+
+def is_report_too_old(report_date: str) -> bool:
+    """발간일이 추출됐고 MAX_REPORT_AGE_DAYS보다 오래됐으면 True."""
+    if not report_date:
+        return False  # 날짜 미상은 통과
+    try:
+        d = dt.date.fromisoformat(report_date)
+    except ValueError:
+        return False
+    return (TODAY_KST - d).days > MAX_REPORT_AGE_DAYS
+
 
 # ── 데이터 클래스 ────────────────────────────────────────────────────────────
 
@@ -508,12 +567,23 @@ def build_candidate(result: SearchResult, text: str) -> Candidate | None:
 def dedupe_results(results: list[SearchResult]) -> list[SearchResult]:
     seen: set[str] = set()
     unique: list[SearchResult] = []
+    dropped_noise = 0
     for result in results:
         clean_url = result.url.split("#")[0]
         if clean_url in seen:
             continue
+        # 노이즈 도메인(블로그·위키·커뮤니티 잡음)은 수집 단계에서 제외
+        if is_noise_domain(clean_url):
+            dropped_noise += 1
+            continue
         seen.add(clean_url)
         unique.append(result)
+
+    if dropped_noise:
+        print(f"[info] noise domains dropped: {dropped_noise}", file=sys.stderr)
+
+    # 신뢰 도메인을 앞쪽으로 정렬 (분석·발송 우선순위 확보)
+    unique.sort(key=lambda r: (not is_trusted_domain(r.url), r.url))
     return unique
 
 
@@ -798,6 +868,7 @@ def main() -> int:
     candidates: list[Candidate] = []
     failed_urls: list[str] = []
     fetched_count = 0
+    dropped_old = 0
 
     for result in results:
         try:
@@ -810,8 +881,15 @@ def main() -> int:
 
         candidate = build_candidate(result, text)
         if candidate:
+            # 발간일이 너무 오래된 글(예: 수년 전 블로그)은 제외
+            if is_report_too_old(candidate.report_date):
+                dropped_old += 1
+                continue
             candidate.source_type = result.source_type
             candidates.append(candidate)
+
+    if dropped_old:
+        print(f"[info] old reports dropped (>{MAX_REPORT_AGE_DAYS}d): {dropped_old}", file=sys.stderr)
 
     update_candidates_with_state(candidates, state)
     state["last_run_at"] = dt.datetime.now(KST).isoformat(timespec="seconds")

@@ -33,6 +33,18 @@
             "per": 65.0,
             "target": "630,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649814"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "method": "PBR",
+            "new_price": null,
+            "old_price": null,
+            "pbr": 5.9,
+            "per": 65.0,
+            "target": "630,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649814"
           }
         ]
       },
@@ -41,6 +53,18 @@
     "006730": {
       "brokers": {
         "iM증권": [
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649797"
+          },
           {
             "bps": null,
             "date": "2026-06-01",
@@ -71,6 +95,18 @@
             "per": 27.8,
             "target": "1,300,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649768"
+          },
+          {
+            "bps": null,
+            "date": "2026-05-29",
+            "eps": 45325,
+            "method": "PER",
+            "new_price": 1260035,
+            "old_price": null,
+            "pbr": null,
+            "per": 27.8,
+            "target": "1,300,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649768"
           }
         ]
       },
@@ -79,6 +115,18 @@
     "012330": {
       "brokers": {
         "메리츠증권": [
+          {
+            "bps": null,
+            "date": "2026-06-02",
+            "eps": null,
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "900,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649831"
+          },
           {
             "bps": null,
             "date": "2026-06-02",
@@ -211,6 +259,18 @@
             "per": null,
             "target": "290,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649783"
+          },
+          {
+            "bps": null,
+            "date": "2026-05-29",
+            "eps": null,
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "290,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649783"
           }
         ]
       },
@@ -249,9 +309,33 @@
             "per": null,
             "target": "330,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649793"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "330,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649793"
           }
         ],
         "유진투자증권": [
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "316,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649790"
+          },
           {
             "bps": null,
             "date": "2026-06-01",
@@ -294,6 +378,18 @@
             "per": null,
             "target": "",
             "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EC%8E%84%ED%81%AC%EB%AF%B8%EC%84%B8%ED%99%94%EB%90%A0%EC%88%98%EB%A1%9D20260529%EC%9C%A0%EC%95%88%ED%83%80%EC%A6%9D%EA%B6%8C.pdf"
+          },
+          {
+            "bps": null,
+            "date": "2026-05-29",
+            "eps": null,
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649762"
           }
         ]
       },
@@ -313,6 +409,18 @@
             "per": 19.1,
             "target": "",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649820"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": 19.1,
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649820"
           }
         ]
       },
@@ -321,6 +429,18 @@
     "090430": {
       "brokers": {
         "유진투자증권": [
+          {
+            "bps": null,
+            "date": "2026-05-29",
+            "eps": null,
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "150,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649784"
+          },
           {
             "bps": null,
             "date": "2026-05-29",
@@ -374,6 +494,18 @@
             "per": null,
             "target": "5,650원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649832"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-02",
+            "eps": null,
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "5,650원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649832"
           }
         ]
       },
@@ -382,6 +514,18 @@
     "129920": {
       "brokers": {
         "유안타증권": [
+          {
+            "bps": null,
+            "date": "2026-05-29",
+            "eps": null,
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649763"
+          },
           {
             "bps": null,
             "date": "2026-05-29",
@@ -443,14 +587,38 @@
             "per": null,
             "target": "500,000원",
             "url": "https://stock.pstatic.net/stock-research/company/15/20260602_company_221723000.pdf"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-02",
+            "eps": null,
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "500,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649839"
           }
         ]
       },
-      "stock_name": "6.02 www.daishin.com NDR 후기 알테오젠"
+      "stock_name": "알테오젠"
     },
     "214450": {
       "brokers": {
         "대신증권": [
+          {
+            "bps": null,
+            "date": "2026-05-26",
+            "eps": null,
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649815"
+          },
           {
             "bps": null,
             "date": "2026-05-26",
@@ -500,6 +668,18 @@
             "per": null,
             "target": "",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649764"
+          },
+          {
+            "bps": null,
+            "date": "2026-05-29",
+            "eps": null,
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649764"
           }
         ]
       },
@@ -519,6 +699,18 @@
             "per": null,
             "target": "",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649761"
+          },
+          {
+            "bps": null,
+            "date": "2026-05-29",
+            "eps": null,
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649761"
           }
         ]
       },
@@ -527,6 +719,18 @@
     "299030": {
       "brokers": {
         "유진투자증권": [
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": 15.9,
+            "target": "19,510원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649791"
+          },
           {
             "bps": null,
             "date": "2026-06-01",
@@ -584,6 +788,18 @@
     "356860": {
       "brokers": {
         "SK증권": [
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "112,800원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649804"
+          },
           {
             "bps": null,
             "date": "2026-06-01",
@@ -778,6 +994,18 @@
           },
           {
             "bps": null,
+            "date": "2026-05-29",
+            "eps": null,
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "per": null,
+            "target": "17,900원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649773"
+          },
+          {
+            "bps": null,
             "date": "2026-06-02",
             "eps": null,
             "method": "PER",
@@ -824,7 +1052,7 @@
       "stock_name": "바클레이즈, 빅토리아 시크릿 실적 호조에 목표주가 상향 조"
     }
   },
-  "last_run_at": "2026-06-03T22:48:05+09:00",
+  "last_run_at": "2026-06-03T22:53:33+09:00",
   "seen_urls": {},
   "stocks": {
     "001450": {
@@ -849,7 +1077,7 @@
     },
     "006260": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PBR",
       "stock_code": "006260",
       "stock_name": "LS",
@@ -859,7 +1087,7 @@
     },
     "006730": {
       "broker": "iM증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "SOTP/EV",
       "stock_code": "006730",
       "stock_name": "서부T&D",
@@ -879,7 +1107,7 @@
     },
     "011070": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER",
       "stock_code": "011070",
       "stock_name": "LG이노텍",
@@ -889,7 +1117,7 @@
     },
     "012330": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "012330",
       "stock_name": "현대모비스",
@@ -989,7 +1217,7 @@
     },
     "051900": {
       "broker": "유진투자증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "SOTP/EV",
       "stock_code": "051900",
       "stock_name": "LG생활건강",
@@ -1009,7 +1237,7 @@
     },
     "064350": {
       "broker": "LS증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "SOTP/EV",
       "stock_code": "064350",
       "stock_name": "현대로템",
@@ -1019,17 +1247,17 @@
     },
     "081180": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "081180",
       "stock_name": "쎄크",
       "target_price": "",
-      "title": "[PDF] 쎄크 (081180)",
-      "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EC%8E%84%ED%81%AC%EB%AF%B8%EC%84%B8%ED%99%94%EB%90%A0%EC%88%98%EB%A1%9D20260529%EC%9C%A0%EC%95%88%ED%83%80%EC%A6%9D%EA%B6%8C.pdf"
+      "title": "쎄크(081180) 미세화될수록 내면 검사가 중요해진다! — 유안타증권 / 2026-05-29",
+      "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649762"
     },
     "085910": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "085910",
       "stock_name": "네오티스",
@@ -1039,7 +1267,7 @@
     },
     "090430": {
       "broker": "유진투자증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER",
       "stock_code": "090430",
       "stock_name": "아모레퍼시픽",
@@ -1049,7 +1277,7 @@
     },
     "094360": {
       "broker": "IBK투자증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "SOTP/EV",
       "stock_code": "094360",
       "stock_name": "칩스앤미디어",
@@ -1079,7 +1307,7 @@
     },
     "128940": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "128940",
       "stock_name": "한미약품",
@@ -1089,7 +1317,7 @@
     },
     "129920": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "129920",
       "stock_name": "대성하이텍",
@@ -1109,13 +1337,13 @@
     },
     "196170": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "SOTP/EV",
       "stock_code": "196170",
-      "stock_name": "6.02 www.daishin.com NDR 후기 알테오젠",
+      "stock_name": "알테오젠",
       "target_price": "500,000원",
-      "title": "[PDF] 알테오젠 특허 리스크 Down, 신규 딜 가능성 Up",
-      "url": "https://stock.pstatic.net/stock-research/company/15/20260602_company_221723000.pdf"
+      "title": "알테오젠(196170) 특허 리스크 Down, 신규 딜 가능성 Up — 대신증권 / 2026-06-02",
+      "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649839"
     },
     "1cec2e016ad6": {
       "broker": "",
@@ -1129,7 +1357,7 @@
     },
     "214450": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER",
       "stock_code": "214450",
       "stock_name": "파마리서치",
@@ -1149,7 +1377,7 @@
     },
     "248070": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "248070",
       "stock_name": "솔루엠",
@@ -1159,7 +1387,7 @@
     },
     "263860": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "263860",
       "stock_name": "지니언스",
@@ -1189,7 +1417,7 @@
     },
     "299030": {
       "broker": "유진투자증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "SOTP/EV",
       "stock_code": "299030",
       "stock_name": "하나기술",
@@ -1239,7 +1467,7 @@
     },
     "356860": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
       "method": "SOTP/EV",
       "stock_code": "356860",
       "stock_name": "티엘비",
@@ -1469,13 +1697,13 @@
     },
     "bbb02cb4a0a1": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-03T22:48:05+09:00",
-      "method": "PER",
+      "last_seen_at": "2026-06-03T22:53:33+09:00",
+      "method": "SOTP/EV",
       "stock_code": "",
       "stock_name": "삼성전자",
-      "target_price": "",
-      "title": "삼성전자 메타 제치고 글로벌 시총 10위 올랐다 - 한국경제",
-      "url": "https://www.hankyung.com/amp/202606023027i"
+      "target_price": "17,900원",
+      "title": "반도체 수율 개선 투자의 핵심 수혜주 — SK증권 / 2026-05-29",
+      "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649773"
     },
     "cc1dfae1ffd2": {
       "broker": "한국투자증권",

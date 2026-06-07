@@ -125,6 +125,36 @@
             "per_year": "",
             "target": "",
             "url": "https://www.news1.kr/amp/finance/general-stock/6188422"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-06",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "",
+            "url": "https://v.daum.net/v/20260606060213068?f=p"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-06",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "",
+            "url": "https://www.news1.kr/amp/finance/general-stock/6188422"
           }
         ]
       },
@@ -231,6 +261,21 @@
             "per_year": "2026F",
             "target": "630,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649814"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "PBR",
+            "new_price": null,
+            "old_price": null,
+            "pbr": 5.9,
+            "pbr_year": "26F",
+            "per": 65.0,
+            "per_year": "2026F",
+            "target": "630,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649814"
           }
         ]
       },
@@ -239,6 +284,21 @@
     "006400": {
       "brokers": {
         "LS증권": [
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "531,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649855"
+          },
           {
             "bps": null,
             "date": "2026-06-05",
@@ -374,6 +434,21 @@
             "per_year": "",
             "target": "",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649797"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649797"
           }
         ]
       },
@@ -393,6 +468,21 @@
             "pbr": null,
             "pbr_year": "",
             "per": null,
+            "per_year": "",
+            "target": "600,000원",
+            "url": "https://contents.premium.naver.com/bilanxlyc/curiousir/contents/260604154634397rz"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-04",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 5.0,
             "per_year": "",
             "target": "600,000원",
             "url": "https://contents.premium.naver.com/bilanxlyc/curiousir/contents/260604154634397rz"
@@ -593,6 +683,21 @@
             "per_year": "",
             "target": "900,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649831"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-02",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "900,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649831"
           }
         ]
       },
@@ -623,6 +728,36 @@
     "018880": {
       "brokers": {
         "유안타증권": [
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "4,200원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649858"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "4,200원",
+            "url": "https://stock.pstatic.net/stock-research/company/18/20260605_company_632210000.pdf"
+          },
           {
             "bps": null,
             "date": "2026-06-05",
@@ -750,6 +885,21 @@
     "028260": {
       "brokers": {
         "SK증권": [
+          {
+            "bps": null,
+            "date": "2026-06-04",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "590,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649842"
+          },
           {
             "bps": null,
             "date": "2026-06-04",
@@ -1007,6 +1157,21 @@
             "per_year": "",
             "target": "40,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649843"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-04",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "40,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649843"
           }
         ]
       },
@@ -1155,6 +1320,51 @@
             "per_year": "",
             "target": "",
             "url": "https://news.nate.com/view/20260605n04955?mid=n1101"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PBR",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 5.0,
+            "per_year": "",
+            "target": "",
+            "url": "https://marketin.edaily.co.kr/News/ReadE?newsId=03024166645478768"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PBR",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 5.0,
+            "per_year": "",
+            "target": "",
+            "url": "https://v.daum.net/v/20260605082355340"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PBR",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 5.0,
+            "per_year": "",
+            "target": "",
+            "url": "https://v.daum.net/v/bLQpjlGhwx"
           }
         ]
       },
@@ -1476,6 +1686,21 @@
             "per_year": "",
             "target": "330,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649793"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "330,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649793"
           }
         ],
         "유진투자증권": [
@@ -1577,6 +1802,21 @@
             "per_year": "",
             "target": "316,000원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649790"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "316,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649790"
           }
         ]
       },
@@ -1585,6 +1825,21 @@
     "069960": {
       "brokers": {
         "한화투자증권": [
+          {
+            "bps": null,
+            "date": "2026-06-04",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "190,000원",
+            "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%ED%98%84%EB%8C%80%EB%B0%B1%ED%99%94%EC%A0%90%EC%9D%B4%EC%A0%9C20260605%ED%95%9C%ED%99%94%ED%88%AC%EC%9E%90%EC%A6%9D%EA%B6%8C.pdf"
+          },
           {
             "bps": null,
             "date": "2026-06-04",
@@ -1842,6 +2097,21 @@
             "per_year": "",
             "target": "",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649820"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 19.1,
+            "per_year": "",
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649820"
           }
         ]
       },
@@ -1850,6 +2120,21 @@
     "089970": {
       "brokers": {
         "대신증권": [
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 59.0,
+            "per_year": "",
+            "target": "80,000원",
+            "url": "https://www.hankyung.com/koreamarket/consensus/pdf/2026-06-1715ddafbb585173d9e3f051a851208e"
+          },
           {
             "bps": null,
             "date": "2026-06-01",
@@ -2116,6 +2401,21 @@
             "per_year": "",
             "target": "",
             "url": "https://www.etoday.co.kr/news/view/2590696"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PBR",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 5.7,
+            "per_year": "",
+            "target": "",
+            "url": "https://v.daum.net/v/8p8o9JNdSc"
           }
         ]
       },
@@ -2128,6 +2428,21 @@
     "122640": {
       "brokers": {
         "유안타증권": [
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "",
+            "url": "https://stock.pstatic.net/stock-research/company/18/20260605_company_42920000.pdf"
+          },
           {
             "bps": null,
             "date": "2026-06-05",
@@ -2208,6 +2523,21 @@
             "old_price": null,
             "pbr": null,
             "per": null,
+            "target": "5,650원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649832"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-02",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
             "target": "5,650원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649832"
           },
@@ -2400,6 +2730,28 @@
       },
       "stock_name": "NHN"
     },
+    "192650": {
+      "brokers": {
+        "키움증권": [
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "7,000원",
+            "url": "https://bbn.kiwoom.com/rfCR12134"
+          }
+        ]
+      },
+      "stock_name": "드림텍"
+    },
     "196170": {
       "brokers": {
         "대신증권": [
@@ -2416,21 +2768,6 @@
             "per": null,
             "per_year": "",
             "target": "500,000원",
-            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649839"
-          },
-          {
-            "bps": null,
-            "date": "2026-06-02",
-            "eps": null,
-            "eps_year": "",
-            "method": "SOTP/EV",
-            "new_price": null,
-            "old_price": null,
-            "pbr": null,
-            "pbr_year": "",
-            "per": null,
-            "per_year": "",
-            "target": "500,000원",
             "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EC%95%8C%ED%85%8C%EC%98%A4%EC%A0%A0%ED%8A%B9%ED%97%8820260602%EB%8C%80%EC%8B%A0%EC%A6%9D%EA%B6%8C.pdf"
           },
           {
@@ -2582,6 +2919,21 @@
             "per_year": "",
             "target": "500,000원",
             "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EC%95%8C%ED%85%8C%EC%98%A4%EC%A0%A0%ED%8A%B9%ED%97%8820260602%EB%8C%80%EC%8B%A0%EC%A6%9D%EA%B6%8C.pdf"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-02",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "500,000원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649839"
           }
         ]
       },
@@ -2615,6 +2967,21 @@
             "old_price": null,
             "pbr": null,
             "per": null,
+            "target": "",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649815"
+          },
+          {
+            "bps": null,
+            "date": "2026-05-26",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
             "target": "",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649815"
           },
@@ -2920,6 +3287,10 @@
       },
       "stock_name": "지니언스"
     },
+    "265c24c5c838": {
+      "brokers": {},
+      "stock_name": "오리콤 투자분석 2026. 06. 07"
+    },
     "276a711e8ce7": {
       "brokers": {
         "NH투자증권": [
@@ -3110,6 +3481,21 @@
             "per_year": "",
             "target": "19,510원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649791"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 15.9,
+            "per_year": "",
+            "target": "19,510원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649791"
           }
         ]
       },
@@ -3118,6 +3504,28 @@
     "2a0bef4574fc": {
       "brokers": {},
       "stock_name": "NEXTBOAT INC NXB(NEXTBOAT INC)"
+    },
+    "2c66e021b2d3": {
+      "brokers": {
+        "KB증권": [
+          {
+            "bps": null,
+            "date": "2026-06-08",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 10.0,
+            "per_year": "",
+            "target": "",
+            "url": "https://news.nate.com/view/20260608n00024"
+          }
+        ]
+      },
+      "stock_name": "\"반도체 다음은 피지컬 AI\"…KB증권 팀장의 하반기 주도"
     },
     "319660": {
       "brokers": {
@@ -3313,6 +3721,21 @@
             "per_year": "",
             "target": "112,800원",
             "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649804"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "112,800원",
+            "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649804"
           }
         ]
       },
@@ -3350,6 +3773,21 @@
             "per_year": "",
             "target": "100,000원",
             "url": "https://stock.pstatic.net/stock-research/company/63/20260605_company_206042000.pdf"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 20.0,
+            "per_year": "",
+            "target": "100,000원",
+            "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/F%26F%ED%85%8C%EC%9D%BC%EB%9F%AC%EB%A9%94%EC%9D%B4%EB%93%9C20260605%EC%9C%A0%EC%A7%84%ED%88%AC%EC%9E%90%EC%A6%9D%EA%B6%8C.pdf"
           },
           {
             "bps": null,
@@ -3450,6 +3888,21 @@
             "per_year": "",
             "target": "590,000원",
             "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EC%82%BC%EC%84%B1%EB%AC%BC%EC%82%B0%EC%A7%80%EB%B6%84%EA%B0%80%EC%B9%98%EB%8A%9420260604SK%EC%A6%9D%EA%B6%8C.pdf"
+          },
+          {
+            "bps": null,
+            "date": "2026-06-04",
+            "eps": null,
+            "eps_year": "",
+            "method": "SOTP/EV",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "590,000원",
+            "url": "https://stock.pstatic.net/stock-research/company/64/20260604_company_540119000.pdf"
           }
         ]
       },
@@ -3476,6 +3929,10 @@
         ]
       },
       "stock_name": "신한證 \"키움증권, 역대급 영업환경에도 PER 5.7배··"
+    },
+    "50950548ed23": {
+      "brokers": {},
+      "stock_name": "GMR솔루션스 GMRS(GMR SOLUTIONS INC)"
     },
     "50f0690e9a49": {
       "brokers": {
@@ -3621,6 +4078,21 @@
             "per_year": "",
             "target": "",
             "url": "https://comp.wisereport.co.kr/company/c1050001.aspx?cmp_cd=001500&cn="
+          },
+          {
+            "bps": null,
+            "date": "2026-06-08",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "",
+            "url": "https://comp.wisereport.co.kr/company/c1050001.aspx?cmp_cd=001500&cn="
           }
         ]
       },
@@ -3699,6 +4171,23 @@
     },
     "7b10d8485e01": {
       "brokers": {
+        "KB증권": [
+          {
+            "bps": null,
+            "date": "2026-06-08",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 10.0,
+            "per_year": "",
+            "target": "",
+            "url": "https://mobile.newsis.com/view_amp.html?ar_id=NISX20260607_0003659302"
+          }
+        ],
         "다올투자증권": [
           {
             "bps": null,
@@ -3764,6 +4253,28 @@
       "brokers": {},
       "stock_name": "퍼스트 커뮤니티, 1분기 핵심순이익 675만 달러..전년비"
     },
+    "83c0dc731af2": {
+      "brokers": {
+        "키움증권": [
+          {
+            "bps": null,
+            "date": "2026-06-05",
+            "eps": null,
+            "eps_year": "",
+            "method": "PBR",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": 5.7,
+            "per_year": "",
+            "target": "",
+            "url": "https://news.nate.com/view/20260605n04659"
+          }
+        ]
+      },
+      "stock_name": "\"Ű, ȯ濡 PER 5.7衤ǥ 60\""
+    },
     "875ab639c5ef": {
       "brokers": {},
       "stock_name": "[한투 테크팀] 채민숙"
@@ -3774,6 +4285,21 @@
           {
             "bps": null,
             "date": "2026-06-06",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER/PBR 병행",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "",
+            "url": "https://comp.wisereport.co.kr/company/c1050001.aspx?cmp_cd=005940&cn="
+          },
+          {
+            "bps": null,
+            "date": "2026-06-08",
             "eps": null,
             "eps_year": "",
             "method": "PER/PBR 병행",
@@ -3836,6 +4362,10 @@
       "brokers": {},
       "stock_name": "레인보우로보틱스 투자분석 2026. 05. 29"
     },
+    "b4c8bff19c77": {
+      "brokers": {},
+      "stock_name": "[더페어 돋보기] 'K"
+    },
     "b8423e84ad13": {
       "brokers": {
         "메리츠증권": [
@@ -3856,6 +4386,21 @@
           }
         ],
         "한국투자증권": [
+          {
+            "bps": null,
+            "date": "2026-06-01",
+            "eps": null,
+            "eps_year": "",
+            "method": "PER",
+            "new_price": null,
+            "old_price": null,
+            "pbr": null,
+            "pbr_year": "",
+            "per": null,
+            "per_year": "",
+            "target": "",
+            "url": "https://stock.mk.co.kr/news/view/1096669"
+          },
           {
             "bps": null,
             "date": "2026-06-01",
@@ -4183,7 +4728,7 @@
       "stock_name": "바클레이즈, 빅토리아 시크릿 실적 호조에 목표주가 상향 조"
     }
   },
-  "last_run_at": "2026-06-07T07:01:56+09:00",
+  "last_run_at": "2026-06-08T07:04:08+09:00",
   "seen_urls": {},
   "stocks": {
     "001450": {
@@ -4218,7 +4763,7 @@
     },
     "005380": {
       "broker": "KB증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
       "stock_code": "005380",
       "stock_name": "현대차",
@@ -4238,7 +4783,7 @@
     },
     "006260": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PBR",
       "stock_code": "006260",
       "stock_name": "LS",
@@ -4248,7 +4793,7 @@
     },
     "006400": {
       "broker": "LS증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "006400",
       "stock_name": "삼성SDI",
@@ -4258,7 +4803,7 @@
     },
     "006730": {
       "broker": "iM증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "006730",
       "stock_name": "서부T&D",
@@ -4278,7 +4823,7 @@
     },
     "009540": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "009540",
       "stock_name": "HD한국조선해양",
@@ -4298,7 +4843,7 @@
     },
     "012330": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "012330",
       "stock_name": "현대모비스",
@@ -4318,7 +4863,7 @@
     },
     "018880": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "018880",
       "stock_name": "한온시스템",
@@ -4328,13 +4873,13 @@
     },
     "01e54e43b162": {
       "broker": "",
-      "last_seen_at": "2026-06-04T08:06:24+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "투자지표",
       "target_price": "1,000원",
       "title": "투자지표 - 초이스스탁",
-      "url": "https://www.choicestock.co.kr/search/invest/ACGC/MRY"
+      "url": "https://www.choicestock.co.kr/search/invest/INAC"
     },
     "020000": {
       "broker": "",
@@ -4358,7 +4903,7 @@
     },
     "028260": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "028260",
       "stock_name": "삼성물산",
@@ -4398,7 +4943,7 @@
     },
     "036800": {
       "broker": "LS증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "036800",
       "stock_name": "나이스정보통신",
@@ -4418,13 +4963,13 @@
     },
     "039490": {
       "broker": "키움증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PBR",
       "stock_code": "039490",
       "stock_name": "키움증권",
       "target_price": "",
-      "title": "\"사상 최대 실적인데 PER 5배\"…키움증권, 저평가 구간 진입-신한",
-      "url": "https://news.nate.com/view/20260605n04955?mid=n1101"
+      "title": "“사상 최대 실적인데 PER 5배”…키움증권, 저평가 구간 진입-신한",
+      "url": "https://v.daum.net/v/bLQpjlGhwx"
     },
     "039630f9238e": {
       "broker": "",
@@ -4478,7 +5023,7 @@
     },
     "064350": {
       "broker": "LS증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "064350",
       "stock_name": "현대로템",
@@ -4488,7 +5033,7 @@
     },
     "069960": {
       "broker": "한화투자증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "069960",
       "stock_name": "현대백화점",
@@ -4518,7 +5063,7 @@
     },
     "085910": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "085910",
       "stock_name": "네오티스",
@@ -4528,7 +5073,7 @@
     },
     "089970": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
       "stock_code": "089970",
       "stock_name": "브이엠",
@@ -4558,13 +5103,13 @@
     },
     "0ea545e7348f": {
       "broker": "키움증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PBR",
       "stock_code": "",
       "stock_name": "신한證 “키움증권, 역대급 영업환경에도 PER 5.7배⋯목",
       "target_price": "",
       "title": "신한證 “키움증권, 역대급 영업환경에도 PER 5.7배⋯목표가 60만원”",
-      "url": "https://www.etoday.co.kr/news/view/2590696"
+      "url": "https://v.daum.net/v/8p8o9JNdSc"
     },
     "1026fcd56eb5": {
       "broker": "",
@@ -4578,7 +5123,7 @@
     },
     "122640": {
       "broker": "유안타증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "122640",
       "stock_name": "예스티",
@@ -4598,7 +5143,7 @@
     },
     "128940": {
       "broker": "메리츠증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "128940",
       "stock_name": "한미약품",
@@ -4626,15 +5171,25 @@
       "title": "NHN, GPUaaS 기반 클라우드 사업 완연한 턴어라운드 임박…\"인터넷 ...",
       "url": "https://news.nate.com/view/20260602n02990"
     },
+    "192650": {
+      "broker": "키움증권",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
+      "method": "SOTP/EV",
+      "stock_code": "192650",
+      "stock_name": "드림텍",
+      "target_price": "7,000원",
+      "title": "[PDF] 드림텍 (192650) - 키움증권",
+      "url": "https://bbn.kiwoom.com/rfCR12134"
+    },
     "196170": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "196170",
       "stock_name": "알테오젠",
       "target_price": "500,000원",
-      "title": "[PDF] 알테오젠 특허 리스크 Down, 신규 딜 가능성 Up",
-      "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EC%95%8C%ED%85%8C%EC%98%A4%EC%A0%A0%ED%8A%B9%ED%97%8820260602%EB%8C%80%EC%8B%A0%EC%A6%9D%EA%B6%8C.pdf"
+      "title": "알테오젠(196170) 특허 리스크 Down, 신규 딜 가능성 Up — 대신증권 / 2026-06-02",
+      "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649839"
     },
     "1a4f9ddfdea9": {
       "broker": "",
@@ -4648,7 +5203,7 @@
     },
     "214450": {
       "broker": "대신증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
       "stock_code": "214450",
       "stock_name": "파마리서치",
@@ -4696,6 +5251,16 @@
       "title": "지니언스(263860) 이유 있는 실적개선, 지속성 위한 준비태세 — 유안타증권 / 2026-05-29",
       "url": "http://consensus.hankyung.com/analysis/downpdf?report_idx=649761"
     },
+    "265c24c5c838": {
+      "broker": "",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
+      "method": "PER",
+      "stock_code": "",
+      "stock_name": "오리콤 투자분석 2026. 06. 07",
+      "target_price": "",
+      "title": "오리콤 투자분석 2026. 06. 07 - 주달",
+      "url": "https://www.judal.co.kr?view=stockAI&shareToken=96yO2q93AUUbs7Q2"
+    },
     "276a711e8ce7": {
       "broker": "NH투자증권",
       "last_seen_at": "2026-06-04T08:06:24+09:00",
@@ -4718,7 +5283,7 @@
     },
     "299030": {
       "broker": "유진투자증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "299030",
       "stock_name": "하나기술",
@@ -4735,6 +5300,16 @@
       "target_price": "1,000원",
       "title": "NEXTBOAT INC NXB(NEXTBOAT INC) | 투자지표 - 초이스스탁US",
       "url": "https://www.choicestock.co.kr/search/invest/NXB"
+    },
+    "2c66e021b2d3": {
+      "broker": "KB증권",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
+      "method": "PER",
+      "stock_code": "",
+      "stock_name": "\"반도체 다음은 피지컬 AI\"…KB증권 팀장의 하반기 주도",
+      "target_price": "",
+      "title": "\"반도체 다음은 피지컬 AI\"…KB증권 팀장의 하반기 주도주 전략",
+      "url": "https://news.nate.com/view/20260608n00024"
     },
     "316140": {
       "broker": "대신증권",
@@ -4778,7 +5353,7 @@
     },
     "356860": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "356860",
       "stock_name": "티엘비",
@@ -4788,7 +5363,7 @@
     },
     "383220": {
       "broker": "유진투자증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
       "stock_code": "383220",
       "stock_name": "F&F",
@@ -4798,7 +5373,7 @@
     },
     "383310": {
       "broker": "",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
       "stock_code": "383310",
       "stock_name": "에코프로에이치엔",
@@ -4828,13 +5403,13 @@
     },
     "43eaf0373d73": {
       "broker": "SK증권",
-      "last_seen_at": "2026-06-05T07:21:09+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "SOTP/EV",
       "stock_code": "",
       "stock_name": "삼성전자, 삼성바이오로직스",
       "target_price": "590,000원",
       "title": "[PDF] 삼성물산 (028260/KS)",
-      "url": "https://file.alphasquare.co.kr/media/pdfs/market-report/%EC%82%BC%EC%84%B1%EB%AC%BC%EC%82%B0%EC%A7%80%EB%B6%84%EA%B0%80%EC%B9%98%EB%8A%9420260604SK%EC%A6%9D%EA%B6%8C.pdf"
+      "url": "https://stock.pstatic.net/stock-research/company/64/20260604_company_540119000.pdf"
     },
     "4e3a1a423573": {
       "broker": "키움증권",
@@ -4845,6 +5420,16 @@
       "target_price": "",
       "title": "신한證 \"키움증권, 역대급 영업환경에도 PER 5.7배···목표가 60만원\"",
       "url": "https://news.nate.com/view/20260605n04659"
+    },
+    "50950548ed23": {
+      "broker": "",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
+      "method": "PER",
+      "stock_code": "",
+      "stock_name": "GMR솔루션스 GMRS(GMR SOLUTIONS INC)",
+      "target_price": "1,000원",
+      "title": "GMR솔루션스 GMRS(GMR SOLUTIONS INC) | 투자지표 - 초이스스탁",
+      "url": "https://www.choicestock.co.kr/search/invest/GMRS/MRY"
     },
     "50f0690e9a49": {
       "broker": "메리츠증권",
@@ -4858,7 +5443,7 @@
     },
     "5f454560f5bc": {
       "broker": "현대차증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "",
       "stock_name": "현대차증권",
@@ -4878,7 +5463,7 @@
     },
     "64a0125fcaf6": {
       "broker": "",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "",
       "stock_name": "오리온홀딩스",
@@ -4888,12 +5473,12 @@
     },
     "703417a34380": {
       "broker": "",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "",
       "stock_name": "아모레퍼시픽",
       "target_price": "",
-      "title": "아모레퍼시픽홀딩스 - 기업현황",
+      "title": "아모레퍼시픽홀딩스 - 기업현황 - 기업모니터",
       "url": "https://comp.wisereport.co.kr/company/c1010001.aspx?cmp_cd=002790"
     },
     "75429f6a980e": {
@@ -4917,14 +5502,14 @@
       "url": "https://www.judal.co.kr?view=stockAI&shareToken=Qlh3x7dtg6fIbjES"
     },
     "7b10d8485e01": {
-      "broker": "다올투자증권",
-      "last_seen_at": "2026-06-04T08:06:24+09:00",
+      "broker": "KB증권",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "현대차",
       "target_price": "",
-      "title": "현대차, 보스턴다이나믹스 모멘텀에 재평가 전망…목표가 상향-다올투자증권 - 머니투데이",
-      "url": "https://www.mt.co.kr/amp/stock/2026/06/02/2026060208451461696"
+      "title": "\"반도체 다음은 피지컬 AI\"…KB증권 팀장의 하반기 주도주 전략 - 뉴시스",
+      "url": "https://mobile.newsis.com/view_amp.html?ar_id=NISX20260607_0003659302"
     },
     "7beacf2ceea1": {
       "broker": "메리츠증권",
@@ -4956,6 +5541,16 @@
       "title": "퍼스트 커뮤니티, 1분기 핵심순이익 675만 달러..전년비 38%↑ | 뉴스 - 초이스스탁US",
       "url": "https://www.choicestock.co.kr/stock/news_view/147786"
     },
+    "83c0dc731af2": {
+      "broker": "키움증권",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
+      "method": "PBR",
+      "stock_code": "",
+      "stock_name": "\"Ű, ȯ濡 PER 5.7衤ǥ 60\"",
+      "target_price": "",
+      "title": "\"Ű,  ȯ濡 PER 5.7衤ǥ 60\" : Ʈ",
+      "url": "https://news.nate.com/view/20260605n04659"
+    },
     "875ab639c5ef": {
       "broker": "",
       "last_seen_at": "2026-06-07T07:01:56+09:00",
@@ -4968,7 +5563,7 @@
     },
     "8f724ff3e769": {
       "broker": "NH투자증권",
-      "last_seen_at": "2026-06-06T07:15:05+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER/PBR 병행",
       "stock_code": "",
       "stock_name": "NH투자증권",
@@ -5018,12 +5613,12 @@
     },
     "a49c88900023": {
       "broker": "",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
       "stock_code": "",
       "stock_name": "언유주얼머신스 UMAC(UNUSUAL MACHINES IN",
       "target_price": "1,000원",
-      "title": "언유주얼머신스 UMAC(UNUSUAL MACHINES INC) | 개요",
+      "title": "언유주얼머신스 UMAC(UNUSUAL MACHINES INC) | 개요 - 초이스스탁US",
       "url": "https://www.choicestock.co.kr/search/summary/UMAC"
     },
     "a650e34f8f6f": {
@@ -5046,25 +5641,35 @@
       "title": "레인보우로보틱스 투자분석 2026. 05. 29",
       "url": "https://www.judal.co.kr?view=stockAI&shareToken=VtBpc6OLpaFLwgwH"
     },
-    "b8423e84ad13": {
-      "broker": "한국투자증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
+    "b4c8bff19c77": {
+      "broker": "",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
       "method": "PER",
+      "stock_code": "",
+      "stock_name": "[더페어 돋보기] 'K",
+      "target_price": "",
+      "title": "[더페어 돋보기] 'K-반도체 턴어라운드'가 촉발할 코스피 PER ...",
+      "url": "https://www.thefairnews.co.kr/news/articleView.html?idxno=78858"
+    },
+    "b8423e84ad13": {
+      "broker": "",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
+      "method": "SOTP/EV",
       "stock_code": "",
       "stock_name": "카카오",
       "target_price": "",
-      "title": "한투증권, 한화시스템 목표가 120% 상향…\"수주 성장 동력 확보\"",
-      "url": "https://stock.mk.co.kr/news/view/1096669"
+      "title": "800% 올랐는데 3배 더?…마이크론 진격에 코스피 웃는 까닭 [불앤 ...",
+      "url": "https://stock.mk.co.kr/news/view/1097192"
     },
     "bbb02cb4a0a1": {
-      "broker": "SK증권",
-      "last_seen_at": "2026-06-07T07:01:56+09:00",
-      "method": "SOTP/EV",
+      "broker": "",
+      "last_seen_at": "2026-06-08T07:04:08+09:00",
+      "method": "PER/PBR 병행",
       "stock_code": "",
       "stock_name": "삼성전자",
       "target_price": "",
-      "title": "“AI가 메모리 산업에 구조적 변화 불러와… 마이크론 PER ... - 주간동아",
-      "url": "https://weekly.donga.com/economy/article/all/11/6255805/1"
+      "title": "삼성전자 - 기업현황 - 기업모니터",
+      "url": "https://comp.wisereport.co.kr"
     },
     "cc28b4bab997": {
       "broker": "SK증권",

@@ -9,6 +9,7 @@ GitHub Actions bot for finding Korean equity research reports where the target-p
 - Detects valuation-method signals such as `BPS`, `PBR`, `EPS`, `PER`, `Target PBR`, `Target PER`, `PBR 대신 PER`, and `밸류에이션 변경`.
 - Optionally ingests Telegram messages/PDFs that the bot can access, so forwarded analyst-channel posts can enter the same report pipeline.
 - Compares each stock's latest detected method against the previous state in `state/valuation_methods.json`.
+- Keeps confirmed transition stocks in a follow-up registry so Telegram can show their valuation-method history over time.
 - Writes a Markdown report under `reports/YYYY-MM-DD.md`.
 - Commits the new report and updated state back to the repository.
 

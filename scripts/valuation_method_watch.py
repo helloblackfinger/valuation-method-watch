@@ -240,6 +240,7 @@ class Candidate:
     rerating_kind: str = ""         # 멀티플 / EPS / 혼합 / 기준연도변경
     diffusion: str = ""             # 증권사 간 확산도 (예: "최근 60일 3개사 PER 전환")
     is_cyclical: bool = False       # 시클리컬(수주산업) 여부
+    valuation_rows: list[dict[str, str]] = field(default_factory=list)  # 텔레그램용 구조화 산식 이력
     valuation_timeline: list[str] = field(default_factory=list)  # 날짜별 밸류 산식 누적 요약
 
 
@@ -1195,6 +1196,18 @@ def _valuation_timeline_formula(rec: dict[str, Any]) -> str:
             "EPS", int(rec["eps"]), "PER", rec["per"],
             _record_price(rec, "new_price"),
         )
+    if method.startswith("PBR") and rec.get("pbr"):
+        formula = f"PBR {rec['pbr']:g}배"
+        target = _record_price(rec, "old_price")
+        if target:
+            formula += f" = {target}"
+        return formula
+    if method.startswith("PER") and rec.get("per"):
+        formula = f"PER {rec['per']:g}배"
+        target = _record_price(rec, "new_price")
+        if target:
+            formula += f" = {target}"
+        return formula
 
     target = _record_price(rec, "new_price") or _record_price(rec, "old_price")
     if target:
@@ -1202,12 +1215,12 @@ def _valuation_timeline_formula(rec: dict[str, Any]) -> str:
     return method or "산식미확인"
 
 
-def build_valuation_timeline(
+def build_valuation_rows(
     brokers_hist: dict[str, Any],
     *,
-    limit: int = 6,
-) -> list[str]:
-    """종목의 증권사별 이력을 날짜순 타임라인으로 합친다."""
+    limit: int | None = None,
+) -> list[dict[str, str]]:
+    """종목의 증권사별 이력을 날짜순 구조화 행으로 합친다."""
     rows: list[dict[str, Any]] = []
     seen: set[tuple[str, str, str]] = set()
 
@@ -1223,15 +1236,30 @@ def build_valuation_timeline(
                 "date": date or TODAY_KST.isoformat(),
                 "broker": str(broker),
                 "formula": formula,
+                "method": str(rec.get("method") or ""),
+                "target": _record_price(rec, "new_price") or _record_price(rec, "old_price"),
+                "url": str(rec.get("url") or ""),
             })
 
     rows.sort(key=lambda r: (r["date"], r["broker"], r["formula"]))
-    clipped = rows[-limit:]
+    if limit is not None:
+        rows = rows[-limit:]
+    return rows
+
+
+def build_valuation_timeline(
+    brokers_hist: dict[str, Any],
+    *,
+    limit: int = 6,
+) -> list[str]:
+    """종목의 증권사별 이력을 날짜순 텍스트 타임라인으로 합친다."""
+    all_rows = build_valuation_rows(brokers_hist)
+    clipped = all_rows[-limit:]
     timeline = [
         f"{row['broker']} {row['date']} {row['formula']}".strip()
         for row in clipped
     ]
-    hidden = len(rows) - len(clipped)
+    hidden = len(all_rows) - len(clipped)
     if hidden > 0:
         timeline.insert(0, f"… 이전 {hidden}건")
     return timeline
@@ -1295,57 +1323,162 @@ def _timeline_row_date(row: str) -> str:
     return match.group(0) if match else ""
 
 
+def _method_family(method: str) -> str:
+    if method.startswith("PBR"):
+        return "PBR"
+    if method.startswith("PER"):
+        return "PER"
+    return method or "산식미확인"
+
+
+def _target_number(text: str) -> int | None:
+    if not text:
+        return None
+    digits = re.sub(r"[^0-9]", "", text)
+    return int(digits) if digits else None
+
+
+def _latest_change_summary(rows: list[dict[str, str]]) -> str:
+    if len(rows) < 2:
+        return ""
+
+    prev = rows[-2]
+    curr = rows[-1]
+    bits: list[str] = []
+
+    prev_family = _method_family(prev.get("method", ""))
+    curr_family = _method_family(curr.get("method", ""))
+    if prev_family != curr_family:
+        bits.append(f"방식 {prev_family} → {curr_family}")
+
+    prev_target = _target_number(prev.get("target", ""))
+    curr_target = _target_number(curr.get("target", ""))
+    if prev_target and curr_target and prev_target != curr_target:
+        bits.append(f"목표가 {prev_target:,}원 → {curr_target:,}원")
+
+    return " / ".join(bits)
+
+
+def _candidate_from_confirmed_record(
+    stock_key: str,
+    record: dict[str, Any],
+    history: dict[str, Any],
+) -> Candidate | None:
+    stock_hist = history.get(stock_key)
+    if not stock_hist:
+        return None
+
+    rows = build_valuation_rows(stock_hist.get("brokers", {}))
+    if not rows:
+        return None
+
+    latest = rows[-1]
+    return Candidate(
+        key=stock_key,
+        title=record.get("title") or stock_hist.get("stock_name") or stock_key,
+        url=record.get("url") or latest.get("url") or "",
+        method=latest.get("method") or record.get("method") or "",
+        status="확인",
+        reason=record.get("reason") or "확인된 전환 팔로업",
+        stock_name=record.get("stock_name") or stock_hist.get("stock_name") or "",
+        stock_code=record.get("stock_code") or (stock_key if stock_key.isdigit() else ""),
+        broker=latest.get("broker") or record.get("broker") or "",
+        report_date=record.get("confirmed_at") or latest.get("date") or "",
+        target_price=latest.get("target") or record.get("target_price") or "",
+        valuation_rows=rows,
+        valuation_timeline=[
+            f"{row['broker']} {row['date']} {row['formula']}".strip()
+            for row in rows[-6:]
+        ],
+    )
+
+
+def build_confirmed_followups(candidates: list[Candidate], state: dict[str, Any]) -> list[Candidate]:
+    """오늘 확인된 종목 + 과거 확인 종목을 합쳐 텔레그램 팔로업 대상으로 만든다."""
+    history = state.setdefault("history", {})
+    confirmed_registry = state.setdefault("confirmed_transitions", {})
+    merged: dict[str, Candidate] = {}
+
+    for candidate in candidates:
+        if candidate.status == "확인":
+            merged[candidate.key] = candidate
+
+    for stock_key, record in confirmed_registry.items():
+        if stock_key in merged:
+            continue
+        followup = _candidate_from_confirmed_record(stock_key, record, history)
+        if followup:
+            merged[stock_key] = followup
+
+    return sorted(
+        merged.values(),
+        key=lambda c: (c.report_date or "", c.stock_name or c.title),
+        reverse=True,
+    )
+
+
 def tg_confirmed_line(c: Candidate) -> str:
-    """확인된 전환만 종목별 시계열 산식으로 짧게 포맷."""
+    """확인된 전환을 종목별 밸류 히스토리로 짧게 포맷."""
     name = (c.stock_name or c.title)[:24]
-    lines = [f"• <a href='{c.url}'>{tg_escape(name)}</a>"]
+    rows = c.valuation_rows or []
+    if not rows:
+        rows = [
+            {
+                "date": _timeline_row_date(row),
+                "broker": row.split()[0] if row.split() else "",
+                "formula": row,
+                "method": "",
+                "target": "",
+                "url": "",
+            }
+            for row in c.valuation_timeline
+            if not row.startswith("…")
+        ]
 
-    rows = [row for row in c.valuation_timeline if not row.startswith("…")]
+    rows = rows[-6:]
+    report_date = c.report_date or (rows[-1]["date"] if rows else "")
+    date_suffix = f" — {tg_escape(report_date)}" if report_date else ""
+    lines = [f"• <a href='{c.url}'>{tg_escape(name)}</a>{date_suffix}"]
 
-    if c.prior_bps and c.prior_pbr:
-        old_prefix = " ".join(part for part in (c.broker, c.prior_date) if part)
-        old_formula = _valuation_formula(
-            "BPS", c.prior_bps, "PBR", c.prior_pbr,
-            c.prior_old_price or c.prior_target,
+    for idx, row in enumerate(rows):
+        if len(rows) == 1:
+            label = "현재"
+        elif idx == len(rows) - 1:
+            label = "현재"
+        elif idx == len(rows) - 2:
+            label = "이전"
+        else:
+            label = "과거"
+        broker = row.get("broker", "")
+        date = row.get("date", "")
+        formula = row.get("formula", "")
+        lines.append(
+            f"   ㄴ [{label}] {tg_escape(broker)} {tg_escape(date)}: {tg_escape(formula)}".rstrip()
         )
-        old_row = f"{old_prefix} {old_formula}".strip()
-        if old_row and old_row not in rows:
-            rows.append(old_row)
-    elif c.prior_method and c.prior_target:
-        old_prefix = " ".join(part for part in (c.broker, c.prior_date) if part)
-        old_row = f"{old_prefix} {c.prior_method} = {c.prior_target}".strip()
-        if old_row and old_row not in rows:
-            rows.append(old_row)
 
-    if c.eps and c.per:
-        new_prefix = " ".join(part for part in (c.broker, c.report_date) if part)
-        new_formula = _valuation_formula(
-            "EPS", c.eps, "PER", c.per, c.new_price or c.target_price,
-        )
-        new_row = f"{new_prefix} {new_formula}".strip()
-        if new_row and new_row not in rows:
-            rows.append(new_row)
-    elif c.target_price:
-        new_prefix = " ".join(part for part in (c.broker, c.report_date) if part)
-        new_row = f"{new_prefix} {c.method or '산식미확인'} = {c.target_price}".strip()
-        if new_row and new_row not in rows:
-            rows.append(new_row)
-
-    rows.sort(key=lambda row: (_timeline_row_date(row), row))
-    lines.extend(f"   ㄴ {tg_escape(row)}" for row in rows[:8])
+    change = _latest_change_summary(rows)
+    if change:
+        lines.append(f"   ㄴ 변화: {tg_escape(change)}")
+    elif c.phase_label:
+        lines.append(f"   ㄴ 현재 국면: {tg_escape(_phase_badge(c))}")
 
     return "\n".join(lines)
 
 
-def send_telegram(bot_token: str, chat_id: str, candidates: list[Candidate]) -> None:
-    confirmed = dedupe_by_stock([c for c in candidates if c.status == "확인"])
+def send_telegram(
+    bot_token: str,
+    chat_id: str,
+    candidates: list[Candidate],
+    state: dict[str, Any] | None = None,
+) -> None:
+    confirmed = build_confirmed_followups(candidates, state) if state is not None else dedupe_by_stock([c for c in candidates if c.status == "확인"])
 
     if not confirmed:
         return
 
     lines = [
-        f"📊 <b>밸류에이션 전환 — {TODAY_KST.isoformat()}</b>",
-        f"확인 {len(confirmed)}",
+        f"📊 <b>밸류에이션 전환 팔로업 — {TODAY_KST.isoformat()}</b>",
+        f"확인 종목 {len(confirmed)}",
         "\n🔴 <b>확인된 전환</b>",
     ]
 
@@ -1569,6 +1702,17 @@ def _snapshot(c: Candidate, date: str) -> dict[str, Any]:
     }
 
 
+def _history_record_key(rec: dict[str, Any]) -> tuple[str, str, str, str, str]:
+    """같은 리포트 스냅샷 반복 저장을 막기 위한 보수적 키."""
+    return (
+        str(rec.get("date") or ""),
+        str(rec.get("method") or ""),
+        str(rec.get("target") or ""),
+        str(rec.get("url") or ""),
+        _valuation_timeline_formula(rec),
+    )
+
+
 def _days_between(d1: str, d2: str) -> int | None:
     try:
         return abs((dt.date.fromisoformat(d1) - dt.date.fromisoformat(d2)).days)
@@ -1716,6 +1860,7 @@ def update_candidates_with_state(candidates: list[Candidate], state: dict[str, A
     """
     stocks = state.setdefault("stocks", {})
     history = state.setdefault("history", {})
+    confirmed_registry = state.setdefault("confirmed_transitions", {})
     now = dt.datetime.now(KST).isoformat(timespec="seconds")
     today = TODAY_KST.isoformat()
 
@@ -1770,12 +1915,29 @@ def update_candidates_with_state(candidates: list[Candidate], state: dict[str, A
         # ── 오늘 스냅샷을 이력에 기록 (증권사별) ─────────────────────────────
         if candidate.broker:
             recs = brokers_hist.setdefault(candidate.broker, [])
-            recs[:] = [r for r in recs if r.get("date") != today]  # 같은 날 중복 제거
-            recs.append(_snapshot(candidate, candidate.report_date))
+            snapshot = _snapshot(candidate, candidate.report_date)
+            snapshot_key = _history_record_key(snapshot)
+            recs[:] = [r for r in recs if _history_record_key(r) != snapshot_key]
+            recs.append(snapshot)
             recs.sort(key=lambda r: r.get("date", ""))
             del recs[:-12]  # 증권사당 최근 12건만 유지
 
+        candidate.valuation_rows = build_valuation_rows(brokers_hist)
         candidate.valuation_timeline = build_valuation_timeline(brokers_hist)
+
+        if candidate.status == "확인":
+            confirmed_registry[candidate.key] = {
+                "stock_name": candidate.stock_name,
+                "stock_code": candidate.stock_code,
+                "title": candidate.title,
+                "url": candidate.url,
+                "broker": candidate.broker,
+                "method": candidate.method,
+                "target_price": candidate.target_price,
+                "reason": candidate.reason,
+                "confirmed_at": candidate.report_date or today,
+                "last_seen_at": now,
+            }
 
         stocks[candidate.key] = {
             "stock_name": candidate.stock_name,
@@ -1848,7 +2010,7 @@ def main() -> int:
     tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
     tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
     if tg_token and tg_chat:
-        send_telegram(tg_token, tg_chat, candidates)
+        send_telegram(tg_token, tg_chat, candidates, state)
     else:
         print("[info] telegram not configured (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID 미설정)", file=sys.stderr)
 

@@ -192,6 +192,7 @@ class SearchResult:
     snippet: str = ""
     source_query: str = ""
     source_type: str = "web"  # web | naver_news | community
+    fetch_url: str = ""       # 실제 다운로드 URL. 비공개 토큰 URL은 report/state에 저장하지 않음.
 
 
 @dataclass
@@ -239,6 +240,7 @@ class Candidate:
     rerating_kind: str = ""         # 멀티플 / EPS / 혼합 / 기준연도변경
     diffusion: str = ""             # 증권사 간 확산도 (예: "최근 60일 3개사 PER 전환")
     is_cyclical: bool = False       # 시클리컬(수주산업) 여부
+    valuation_timeline: list[str] = field(default_factory=list)  # 날짜별 밸류 산식 누적 요약
 
 
 # ── HTTP 헬퍼 ────────────────────────────────────────────────────────────────
@@ -445,6 +447,217 @@ def extra_url_results() -> list[SearchResult]:
                      source_query="REPORT_WATCH_URLS")
         for url in urls
     ]
+
+
+# ── 텔레그램 소스 수집 ───────────────────────────────────────────────────────
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _split_env_set(name: str) -> set[str]:
+    raw = os.getenv(name, "")
+    return {part.strip() for part in re.split(r"[\n,]+", raw) if part.strip()}
+
+
+def _telegram_message_link(msg: dict[str, Any]) -> str:
+    chat = msg.get("chat", {})
+    username = chat.get("username")
+    message_id = msg.get("message_id")
+    if username and message_id:
+        return f"https://t.me/{username}/{message_id}"
+
+    chat_id = str(chat.get("id", ""))
+    if chat_id.startswith("-100") and message_id:
+        return f"https://t.me/c/{chat_id[4:]}/{message_id}"
+    return f"telegram:{chat_id}:{message_id or ''}"
+
+
+def _telegram_text_urls(text: str, entities: list[dict[str, Any]]) -> list[str]:
+    urls: list[str] = []
+    for ent in entities:
+        if ent.get("type") == "text_link" and ent.get("url"):
+            urls.append(ent["url"])
+            continue
+        if ent.get("type") == "url":
+            offset = ent.get("offset", 0)
+            length = ent.get("length", 0)
+            urls.append(text[offset:offset + length])
+    urls.extend(re.findall(r"https?://[^\s<>()]+", text))
+    return list(dict.fromkeys(urls))
+
+
+def _telegram_file_url(bot_token: str, file_id: str) -> str:
+    data = request_json(
+        f"https://api.telegram.org/bot{bot_token}/getFile",
+        params={"file_id": file_id},
+    )
+    path = data.get("result", {}).get("file_path", "")
+    if not path:
+        return ""
+    return f"https://api.telegram.org/file/bot{bot_token}/{path}"
+
+
+def _telegram_public_channel_url(channel: str) -> str:
+    channel = channel.strip()
+    channel = channel.removeprefix("https://t.me/")
+    channel = channel.removeprefix("http://t.me/")
+    channel = channel.removeprefix("t.me/")
+    channel = channel.removeprefix("@")
+    return f"https://t.me/s/{channel}"
+
+
+def collect_telegram_public_channels() -> list[SearchResult]:
+    """공개 텔레그램 채널 웹 미리보기(t.me/s/...)에서 최근 글의 URL을 수집한다.
+
+    TELEGRAM_PUBLIC_CHANNELS=@channel1,@channel2 형태로 설정한다.
+    공개 채널만 가능하며, 로그인/가입이 필요한 비공개 채널은 수집방 포워딩 방식으로 처리한다.
+    """
+    channels = sorted(_split_env_set("TELEGRAM_PUBLIC_CHANNELS"))
+    if not channels:
+        return []
+
+    results: list[SearchResult] = []
+    max_posts = int(os.getenv("TELEGRAM_PUBLIC_POSTS_LIMIT", "20"))
+    for channel in channels:
+        preview_url = _telegram_public_channel_url(channel)
+        try:
+            resp = requests.get(preview_url, headers={"User-Agent": USER_AGENT}, timeout=20)
+            resp.raise_for_status()
+        except Exception as exc:
+            print(f"[warn] telegram public channel failed for {channel}: {exc}", file=sys.stderr)
+            continue
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+        for post in soup.select(".tgme_widget_message")[-max_posts:]:
+            text_el = post.select_one(".tgme_widget_message_text")
+            text = text_el.get_text(" ", strip=True) if text_el else ""
+            if not text:
+                continue
+
+            post_url = post.get("data-post", "")
+            if post_url:
+                post_url = f"https://t.me/{post_url}"
+            title = textwrap.shorten(text, width=90, placeholder="…")
+            for link in post.select("a[href]"):
+                url = link.get("href", "")
+                if not url.startswith("http"):
+                    continue
+                # t.me 내부 이동 링크는 원문 후보로 쓰기 어렵다.
+                if domain_of(url) == "t.me":
+                    continue
+                results.append(SearchResult(
+                    title=title,
+                    url=url,
+                    snippet=text,
+                    source_query=f"텔레그램 공개채널 {channel}",
+                    source_type="telegram",
+                ))
+            if post_url:
+                results.append(SearchResult(
+                    title=title,
+                    url=post_url,
+                    snippet=text,
+                    source_query=f"텔레그램 공개채널 {channel}",
+                    source_type="telegram",
+                ))
+
+    if results:
+        print(f"[info] telegram public channels: {len(results)} results", file=sys.stderr)
+    return results
+
+
+def collect_telegram_results(state: dict[str, Any]) -> list[SearchResult]:
+    """봇이 받은 텔레그램 메시지/채널 포스트에서 URL과 PDF를 수집한다.
+
+    활성화 조건:
+    - TELEGRAM_BOT_TOKEN 설정
+    - TELEGRAM_COLLECT_UPDATES=1 이거나 TELEGRAM_SOURCE_CHAT_IDS 설정
+
+    TELEGRAM_SOURCE_CHAT_IDS가 있으면 해당 chat id만 수집한다. 여러 개는 콤마/줄바꿈 구분.
+    """
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    allowed_chats = _split_env_set("TELEGRAM_SOURCE_CHAT_IDS")
+    if not bot_token or (not allowed_chats and not _env_bool("TELEGRAM_COLLECT_UPDATES")):
+        return []
+
+    tg_state = state.setdefault("telegram", {})
+    offset = int(tg_state.get("update_offset") or 0)
+    params: dict[str, Any] = {
+        "timeout": 0,
+        "limit": min(int(os.getenv("TELEGRAM_UPDATES_LIMIT", "50")), 100),
+        "allowed_updates": json.dumps(["message", "channel_post"]),
+    }
+    if offset:
+        params["offset"] = offset
+
+    try:
+        data = request_json(
+            f"https://api.telegram.org/bot{bot_token}/getUpdates",
+            params=params,
+        )
+    except Exception as exc:
+        print(f"[warn] telegram collect failed: {exc}", file=sys.stderr)
+        return []
+
+    results: list[SearchResult] = []
+    max_update_id = offset - 1
+    for update in data.get("result", []):
+        update_id = update.get("update_id")
+        if isinstance(update_id, int):
+            max_update_id = max(max_update_id, update_id)
+
+        msg = update.get("channel_post") or update.get("message") or {}
+        if not msg:
+            continue
+
+        chat = msg.get("chat", {})
+        chat_id = str(chat.get("id", ""))
+        username = str(chat.get("username", ""))
+        if allowed_chats and chat_id not in allowed_chats and f"@{username}" not in allowed_chats:
+            continue
+
+        text = msg.get("text") or msg.get("caption") or ""
+        entities = msg.get("entities") or msg.get("caption_entities") or []
+        source_url = _telegram_message_link(msg)
+        title = textwrap.shorten(text.replace("\n", " "), width=90, placeholder="…")
+        if not title:
+            title = msg.get("document", {}).get("file_name") or f"Telegram {chat_id}"
+
+        for url in _telegram_text_urls(text, entities):
+            results.append(SearchResult(
+                title=title,
+                url=url,
+                snippet=text,
+                source_query="텔레그램",
+                source_type="telegram",
+            ))
+
+        document = msg.get("document") or {}
+        file_name = document.get("file_name", "")
+        mime_type = document.get("mime_type", "")
+        file_id = document.get("file_id", "")
+        is_pdf = mime_type == "application/pdf" or file_name.lower().endswith(".pdf")
+        if file_id and is_pdf:
+            fetch_url = _telegram_file_url(bot_token, file_id)
+            if fetch_url:
+                results.append(SearchResult(
+                    title=file_name or title,
+                    url=source_url,
+                    snippet=text,
+                    source_query="텔레그램 PDF",
+                    source_type="telegram",
+                    fetch_url=fetch_url,
+                ))
+
+    if max_update_id >= offset:
+        tg_state["update_offset"] = max_update_id + 1
+    if results:
+        print(f"[info] telegram: {len(results)} results", file=sys.stderr)
+    return results
 
 
 # ── 텍스트 추출 ──────────────────────────────────────────────────────────────
@@ -932,6 +1145,98 @@ def valuation_breakdown(c: Candidate) -> str:
     return ""
 
 
+def _price_text(value: Any) -> str:
+    if value in (None, ""):
+        return ""
+    if isinstance(value, str):
+        return value
+    try:
+        return f"{int(value):,}원"
+    except (TypeError, ValueError):
+        return str(value)
+
+
+def _record_price(rec: dict[str, Any], preferred_key: str) -> str:
+    for key in (preferred_key, "target"):
+        text = _price_text(rec.get(key))
+        if text:
+            return text
+    return ""
+
+
+def _valuation_formula(
+    base_label: str,
+    base_value: int,
+    multiple_label: str,
+    multiple_value: float,
+    price: Any = None,
+) -> str:
+    formula = (
+        f"{base_label} {base_value:,}원 × "
+        f"{multiple_label} {multiple_value:g}배"
+    )
+    price_text = _price_text(price)
+    if price_text:
+        formula += f" = {price_text}"
+    return formula
+
+
+def _valuation_timeline_formula(rec: dict[str, Any]) -> str:
+    """이력 스냅샷 1개를 'EPS 0원 × PER 0배 = 0원' 형태로 짧게 포맷."""
+    method = str(rec.get("method") or "").strip()
+
+    if rec.get("bps") and rec.get("pbr"):
+        return _valuation_formula(
+            "BPS", int(rec["bps"]), "PBR", rec["pbr"],
+            _record_price(rec, "old_price"),
+        )
+    if rec.get("eps") and rec.get("per"):
+        return _valuation_formula(
+            "EPS", int(rec["eps"]), "PER", rec["per"],
+            _record_price(rec, "new_price"),
+        )
+
+    target = _record_price(rec, "new_price") or _record_price(rec, "old_price")
+    if target:
+        return f"{method or '산식미확인'} = {target}"
+    return method or "산식미확인"
+
+
+def build_valuation_timeline(
+    brokers_hist: dict[str, Any],
+    *,
+    limit: int = 6,
+) -> list[str]:
+    """종목의 증권사별 이력을 날짜순 타임라인으로 합친다."""
+    rows: list[dict[str, Any]] = []
+    seen: set[tuple[str, str, str]] = set()
+
+    for broker, recs in brokers_hist.items():
+        for rec in recs:
+            date = str(rec.get("date") or "")
+            formula = _valuation_timeline_formula(rec)
+            key = (date, str(broker), formula)
+            if key in seen:
+                continue
+            seen.add(key)
+            rows.append({
+                "date": date or TODAY_KST.isoformat(),
+                "broker": str(broker),
+                "formula": formula,
+            })
+
+    rows.sort(key=lambda r: (r["date"], r["broker"], r["formula"]))
+    clipped = rows[-limit:]
+    timeline = [
+        f"{row['broker']} {row['date']} {row['formula']}".strip()
+        for row in clipped
+    ]
+    hidden = len(rows) - len(clipped)
+    if hidden > 0:
+        timeline.insert(0, f"… 이전 {hidden}건")
+    return timeline
+
+
 # ── 텔레그램 발송 ────────────────────────────────────────────────────────────
 
 def tg_escape(text: str) -> str:
@@ -985,98 +1290,70 @@ def tg_line(c: Candidate) -> str:
     return line
 
 
+def _timeline_row_date(row: str) -> str:
+    match = re.search(r"\d{4}-\d{2}-\d{2}", row)
+    return match.group(0) if match else ""
+
+
 def tg_confirmed_line(c: Candidate) -> str:
-    """확인된 전환용 포맷:
-        • 종목 - 증권사 날짜  [국면 배지]
-          ㄴ 기존 BPS×PBR = 목표가   (현재 리포트 또는 과거 이력에서 복원)
-          ㄴ 신규 EPS×PER = 목표가
-          ㄴ 재평가 PER 14→16배 상향
-          ㄴ 합의 N개 증권사 PER 적용 / 확산도
-    수치가 없는 줄(ㄴ)은 생략된다.
-    """
+    """확인된 전환만 종목별 시계열 산식으로 짧게 포맷."""
     name = (c.stock_name or c.title)[:24]
-    head_bits = []
-    if c.broker:
-        head_bits.append(c.broker)
-    if c.report_date:
-        head_bits.append(c.report_date)
-    head = f" - {tg_escape(' '.join(head_bits))}" if head_bits else ""
-    lines = [f"• <a href='{c.url}'>{tg_escape(name)}</a>{head}"]
+    lines = [f"• <a href='{c.url}'>{tg_escape(name)}</a>"]
 
-    badge = _phase_badge(c)
-    if badge:
-        lines.append(f"   ㄴ {tg_escape(badge)}")
+    rows = [row for row in c.valuation_timeline if not row.startswith("…")]
 
-    # 기존 산식: 현재 리포트 우선, 없으면 과거 이력에서 복원
-    use_bps = c.bps if c.bps else c.prior_bps
-    use_pbr = c.pbr if c.pbr else c.prior_pbr
-    use_old = c.old_price if c.old_price else c.prior_old_price
-    if use_bps and use_pbr:
-        old = f"BPS {use_bps:,}원 × PBR {use_pbr:g}배"
-        if use_old:
-            old += f" = {use_old:,}원"
-        src = f" [{c.prior_date} 기록]" if (not c.bps and c.prior_date) else ""
-        lines.append(f"   ㄴ 기존 {tg_escape(old + src)}")
+    if c.prior_bps and c.prior_pbr:
+        old_prefix = " ".join(part for part in (c.broker, c.prior_date) if part)
+        old_formula = _valuation_formula(
+            "BPS", c.prior_bps, "PBR", c.prior_pbr,
+            c.prior_old_price or c.prior_target,
+        )
+        old_row = f"{old_prefix} {old_formula}".strip()
+        if old_row and old_row not in rows:
+            rows.append(old_row)
     elif c.prior_method and c.prior_target:
-        d = f" ({c.prior_date})" if c.prior_date else ""
-        lines.append(f"   ㄴ 기존 {tg_escape(c.prior_method)} 방식, 목표가 {tg_escape(c.prior_target)}{d}")
+        old_prefix = " ".join(part for part in (c.broker, c.prior_date) if part)
+        old_row = f"{old_prefix} {c.prior_method} = {c.prior_target}".strip()
+        if old_row and old_row not in rows:
+            rows.append(old_row)
 
-    # 신규 산식: EPS × PER
     if c.eps and c.per:
-        new = f"EPS {c.eps:,}원 × PER {c.per:g}배"
-        if c.new_price:
-            new += f" = {c.new_price:,}원"
-        lines.append(f"   ㄴ 신규 {tg_escape(new)}")
+        new_prefix = " ".join(part for part in (c.broker, c.report_date) if part)
+        new_formula = _valuation_formula(
+            "EPS", c.eps, "PER", c.per, c.new_price or c.target_price,
+        )
+        new_row = f"{new_prefix} {new_formula}".strip()
+        if new_row and new_row not in rows:
+            rows.append(new_row)
     elif c.target_price:
-        lines.append(f"   ㄴ 신규 목표가 {tg_escape(c.target_price)}")
+        new_prefix = " ".join(part for part in (c.broker, c.report_date) if part)
+        new_row = f"{new_prefix} {c.method or '산식미확인'} = {c.target_price}".strip()
+        if new_row and new_row not in rows:
+            rows.append(new_row)
 
-    # 멀티플 재평가 사다리
-    if c.rerating_trend:
-        kind = f" ({c.rerating_kind})" if c.rerating_kind else ""
-        lines.append(f"   ㄴ 재평가 {tg_escape(c.rerating_trend + kind)}")
-
-    # 교차 증권사 컨센서스 / 확산도
-    if c.diffusion:
-        lines.append(f"   ㄴ {tg_escape(c.diffusion)}")
-    elif len(c.consensus_brokers) >= 2:
-        lines.append(f"   ㄴ 합의 {len(c.consensus_brokers)}개 증권사 PER 적용")
+    rows.sort(key=lambda row: (_timeline_row_date(row), row))
+    lines.extend(f"   ㄴ {tg_escape(row)}" for row in rows[:8])
 
     return "\n".join(lines)
 
 
 def send_telegram(bot_token: str, chat_id: str, candidates: list[Candidate]) -> None:
     confirmed = dedupe_by_stock([c for c in candidates if c.status == "확인"])
-    watch = dedupe_by_stock([c for c in candidates if c.status == "후보"])
-    # 멀티플 재평가가 잡힌 종목 (확인/후보 무관) — 빅사이클 핵심 신호
-    rerating = dedupe_by_stock([c for c in candidates if c.rerating_trend])
 
-    if not confirmed and not watch and not rerating:
+    if not confirmed:
         return
 
     lines = [
         f"📊 <b>밸류에이션 전환 — {TODAY_KST.isoformat()}</b>",
-        f"확인 {len(confirmed)} · 후보 {len(watch)} · 재평가 {len(rerating)}",
+        f"확인 {len(confirmed)}",
+        "\n🔴 <b>확인된 전환</b>",
     ]
 
-    if confirmed:
-        lines.append("\n🔴 <b>확인된 전환</b>")
-        lines.extend(tg_confirmed_line(c) for c in confirmed[:8])
-
-    if rerating:
-        lines.append("\n📈 <b>멀티플 재평가(re-rating)</b>")
-        for c in rerating[:8]:
-            nm = (c.stock_name or c.title)[:24]
-            extra = f" [{c.rerating_kind}]" if c.rerating_kind else ""
-            lines.append(f"• <a href='{c.url}'>{tg_escape(nm)}</a> — {tg_escape(c.rerating_trend + extra)}")
-
-    if watch:
-        shown = watch[:8]
-        more = len(watch) - len(shown)
-        header = "\n🟡 <b>후보</b>" + (f" (상위 {len(shown)})" if more > 0 else "")
-        lines.append(header)
-        lines.extend(tg_line(c) for c in shown)
-        if more > 0:
-            lines.append(f"… 외 {more}건")
+    shown = confirmed[:8]
+    lines.extend(tg_confirmed_line(c) for c in shown)
+    more = len(confirmed) - len(shown)
+    if more > 0:
+        lines.append(f"… 외 확인 {more}건")
 
     lines.append(
         "\n📄 <a href='https://github.com/helloblackfinger/"
@@ -1161,6 +1438,7 @@ def render_candidate(c: Candidate) -> str:
         "naver_news": "네이버뉴스",
         "community": "커뮤니티",
         "broker_pdf": "증권사PDF",
+        "telegram": "텔레그램",
     }.get(c.source_type, "웹")
     lines = [
         f"### {escape_md(identity)}",
@@ -1180,6 +1458,9 @@ def render_candidate(c: Candidate) -> str:
         lines.append(f"- 발간일/감지일: {c.report_date}")
     if c.target_price:
         lines.append(f"- 목표가: {escape_md(c.target_price)}")
+    if c.valuation_timeline:
+        lines.append("- 밸류 타임라인:")
+        lines.extend(f"  - {escape_md(row)}" for row in c.valuation_timeline)
     breakdown = valuation_breakdown(c)
     if breakdown:
         lines.append(f"- 산식 수치: {escape_md(breakdown)}")
@@ -1216,6 +1497,7 @@ def render_report(
     failed_urls: list[str],
     naver_news_count: int,
     consensus_count: int = 0,
+    telegram_count: int = 0,
 ) -> str:
     confirmed = [c for c in candidates if c.status == "확인"]
     watch = [c for c in candidates if c.status == "후보"]
@@ -1230,6 +1512,7 @@ def render_report(
         f"- 검색 엔진: {provider}",
         f"- 네이버 뉴스 직접 수집: {naver_news_count}건",
         f"- 한경 컨센서스 PDF: {consensus_count}건",
+        f"- 텔레그램 수집: {telegram_count}건",
         f"- 확인한 URL 수: {fetched_count}",
         f"- 확인된 전환: {len(confirmed)}",
         f"- 후보: {len(watch)}",
@@ -1492,6 +1775,8 @@ def update_candidates_with_state(candidates: list[Candidate], state: dict[str, A
             recs.sort(key=lambda r: r.get("date", ""))
             del recs[:-12]  # 증권사당 최근 12건만 유지
 
+        candidate.valuation_timeline = build_valuation_timeline(brokers_hist)
+
         stocks[candidate.key] = {
             "stock_name": candidate.stock_name,
             "stock_code": candidate.stock_code,
@@ -1512,9 +1797,14 @@ def main() -> int:
 
     state = load_state()
     results, provider = collect_results()
+    telegram_results = collect_telegram_results(state)
+    telegram_results.extend(collect_telegram_public_channels())
+    if telegram_results:
+        results = dedupe_results(results + telegram_results)
 
     naver_news_count = sum(1 for r in results if r.source_type == "naver_news")
     consensus_count = sum(1 for r in results if r.source_type == "broker_pdf")
+    telegram_count = sum(1 for r in results if r.source_type == "telegram")
 
     candidates: list[Candidate] = []
     failed_urls: list[str] = []
@@ -1523,7 +1813,7 @@ def main() -> int:
 
     for result in results:
         try:
-            _, text = fetch_text(result.url)
+            _, text = fetch_text(result.fetch_url or result.url)
             fetched_count += 1
         except Exception as exc:
             print(f"[warn] fetch failed for {result.url}: {exc}", file=sys.stderr)
@@ -1549,7 +1839,7 @@ def main() -> int:
     # 리포트 저장
     report = render_report(
         candidates, provider, fetched_count, failed_urls,
-        naver_news_count, consensus_count,
+        naver_news_count, consensus_count, telegram_count,
     )
     report_path = REPORTS_DIR / f"{TODAY_KST.isoformat()}.md"
     report_path.write_text(report, encoding="utf-8")
@@ -1569,6 +1859,7 @@ def main() -> int:
         Provider:      {provider}
         Naver news:    {naver_news_count}
         Consensus PDF: {consensus_count}
+        Telegram:      {telegram_count}
         Results:       {len(results)}
         Fetched:       {fetched_count}
         Candidates:    {len(candidates)} (확인 {confirmed} / 후보 {watch})

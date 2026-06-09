@@ -30,7 +30,7 @@
 
 ## 구현된 기능 (작업 순서대로)
 
-1. **데이터 소스**: Tavily 웹검색 + 한경 컨센서스 증권사 PDF 크롤 + 네이버뉴스(GH IP 차단됨)
+1. **데이터 소스**: Tavily 웹검색 + 한경 컨센서스 증권사 PDF 크롤 + 네이버뉴스(GH IP 차단됨) + 텔레그램 봇 수신 메시지/PDF
 2. **텔레그램 발송**: BOT_TOKEN + CHAT_ID (봇 API 방식)
 3. **오탐 제거**: 노이즈 도메인(블로그·위키·커뮤니티) 차단, 신뢰 도메인 우선, 30일 이내
 4. **산식 수치 추출**: EPS×PER / BPS×PBR 금액 계산, **목표가 ±15% 교차검증**(거짓 숫자 폐기)
@@ -56,6 +56,7 @@
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` (= 1459739042)
 - `TAVILY_API_KEY` (무료, Bearer 인증)
 - env: LOOKBACK_DAYS=2, MAX_REPORT_AGE_DAYS=30, CONSENSUS_LIMIT=30
+- optional vars: TELEGRAM_COLLECT_UPDATES=1, TELEGRAM_SOURCE_CHAT_IDS, TELEGRAM_UPDATES_LIMIT, TELEGRAM_PUBLIC_CHANNELS, TELEGRAM_PUBLIC_POSTS_LIMIT
 
 ## 현재 상태 (2026-06-04)
 
@@ -70,6 +71,7 @@
 - 일부 해외종목·뉴스 헤드라인은 종목코드 미식별 → history 추적 불가 (필터링됨)
 - D. EPS 추세/수주잔고 연동: 리포트 본문에 묻혀 자동 수집 까다로움 (미구현, 보조신호 후보)
 - 진화 후보: 특정 섹터(조선 등) 집중 모드, EPS 기울기 추적, 국면 전환 알림 강화
+- 텔레그램 수집: 수집방 모드(Bot API updates) + 공개채널 모드(t.me/s 웹 미리보기). 비공개/유료 채널 글은 수집용 그룹/채널로 포워딩하는 방식이 가장 안정적.
 
 ## 이어서 작업할 때
 

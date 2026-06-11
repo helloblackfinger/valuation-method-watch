@@ -151,13 +151,29 @@ TRUSTED_DOMAINS = {
     "infostockdaily.co.kr", "paxnet.co.kr", "wisereport.co.kr",
 }
 
+def _env_int(name: str, default: int) -> int:
+    """int 환경변수. GitHub Actions는 미설정 vars도 빈 문자열로 주입하므로
+    빈 값·잘못된 값은 기본값으로 처리한다 (int('') 크래시 방지)."""
+    raw = (os.getenv(name) or "").strip()
+    if not raw:
+        return default
+    try:
+        return int(raw)
+    except ValueError:
+        print(f"[warn] invalid int env {name}={raw!r}, using {default}", file=sys.stderr)
+        return default
+
+
 # 발간일이 이 일수보다 오래되면 제외 (날짜가 추출된 경우에만 적용)
-MAX_REPORT_AGE_DAYS = int(os.getenv("MAX_REPORT_AGE_DAYS", "30"))
+MAX_REPORT_AGE_DAYS = _env_int("MAX_REPORT_AGE_DAYS", 30)
+
+# 확인된 전환 종목을 팔로업 목록에 유지하는 기간 (마지막 관측일 기준)
+CONFIRMED_FOLLOWUP_DAYS = _env_int("CONFIRMED_FOLLOWUP_DAYS", 90)
 
 
 def domain_of(url: str) -> str:
     try:
-        return (urlparse(url).netloc or "").lower().lstrip("www.")
+        return (urlparse(url).netloc or "").lower().removeprefix("www.")
     except Exception:
         return ""
 
@@ -522,7 +538,7 @@ def collect_telegram_public_channels() -> list[SearchResult]:
         return []
 
     results: list[SearchResult] = []
-    max_posts = int(os.getenv("TELEGRAM_PUBLIC_POSTS_LIMIT", "20"))
+    max_posts = _env_int("TELEGRAM_PUBLIC_POSTS_LIMIT", 20)
     for channel in channels:
         preview_url = _telegram_public_channel_url(channel)
         try:
@@ -589,7 +605,7 @@ def collect_telegram_results(state: dict[str, Any]) -> list[SearchResult]:
     offset = int(tg_state.get("update_offset") or 0)
     params: dict[str, Any] = {
         "timeout": 0,
-        "limit": min(int(os.getenv("TELEGRAM_UPDATES_LIMIT", "50")), 100),
+        "limit": min(_env_int("TELEGRAM_UPDATES_LIMIT", 50), 100),
         "allowed_updates": json.dumps(["message", "channel_post"]),
     }
     if offset:
@@ -611,48 +627,53 @@ def collect_telegram_results(state: dict[str, Any]) -> list[SearchResult]:
         if isinstance(update_id, int):
             max_update_id = max(max_update_id, update_id)
 
-        msg = update.get("channel_post") or update.get("message") or {}
-        if not msg:
-            continue
+        # update 1건 실패(예: 20MB 초과 PDF의 getFile 오류)가 전체 런을
+        # 죽이면 offset이 안 올라가 같은 메시지로 매일 실패하므로 격리한다.
+        try:
+            msg = update.get("channel_post") or update.get("message") or {}
+            if not msg:
+                continue
 
-        chat = msg.get("chat", {})
-        chat_id = str(chat.get("id", ""))
-        username = str(chat.get("username", ""))
-        if allowed_chats and chat_id not in allowed_chats and f"@{username}" not in allowed_chats:
-            continue
+            chat = msg.get("chat", {})
+            chat_id = str(chat.get("id", ""))
+            username = str(chat.get("username", ""))
+            if allowed_chats and chat_id not in allowed_chats and f"@{username}" not in allowed_chats:
+                continue
 
-        text = msg.get("text") or msg.get("caption") or ""
-        entities = msg.get("entities") or msg.get("caption_entities") or []
-        source_url = _telegram_message_link(msg)
-        title = textwrap.shorten(text.replace("\n", " "), width=90, placeholder="…")
-        if not title:
-            title = msg.get("document", {}).get("file_name") or f"Telegram {chat_id}"
+            text = msg.get("text") or msg.get("caption") or ""
+            entities = msg.get("entities") or msg.get("caption_entities") or []
+            source_url = _telegram_message_link(msg)
+            title = textwrap.shorten(text.replace("\n", " "), width=90, placeholder="…")
+            if not title:
+                title = msg.get("document", {}).get("file_name") or f"Telegram {chat_id}"
 
-        for url in _telegram_text_urls(text, entities):
-            results.append(SearchResult(
-                title=title,
-                url=url,
-                snippet=text,
-                source_query="텔레그램",
-                source_type="telegram",
-            ))
-
-        document = msg.get("document") or {}
-        file_name = document.get("file_name", "")
-        mime_type = document.get("mime_type", "")
-        file_id = document.get("file_id", "")
-        is_pdf = mime_type == "application/pdf" or file_name.lower().endswith(".pdf")
-        if file_id and is_pdf:
-            fetch_url = _telegram_file_url(bot_token, file_id)
-            if fetch_url:
+            for url in _telegram_text_urls(text, entities):
                 results.append(SearchResult(
-                    title=file_name or title,
-                    url=source_url,
+                    title=title,
+                    url=url,
                     snippet=text,
-                    source_query="텔레그램 PDF",
+                    source_query="텔레그램",
                     source_type="telegram",
-                    fetch_url=fetch_url,
                 ))
+
+            document = msg.get("document") or {}
+            file_name = document.get("file_name", "")
+            mime_type = document.get("mime_type", "")
+            file_id = document.get("file_id", "")
+            is_pdf = mime_type == "application/pdf" or file_name.lower().endswith(".pdf")
+            if file_id and is_pdf:
+                fetch_url = _telegram_file_url(bot_token, file_id)
+                if fetch_url:
+                    results.append(SearchResult(
+                        title=file_name or title,
+                        url=source_url,
+                        snippet=text,
+                        source_query="텔레그램 PDF",
+                        source_type="telegram",
+                        fetch_url=fetch_url,
+                    ))
+        except Exception as exc:
+            print(f"[warn] telegram update {update_id} skipped: {exc}", file=sys.stderr)
 
     if max_update_id >= offset:
         tg_state["update_offset"] = max_update_id + 1
@@ -955,28 +976,17 @@ def state_key(stock_name: str, stock_code: str, url: str) -> str:
 
 def load_state() -> dict[str, Any]:
     if not STATE_PATH.exists():
-        return {"stocks": {}, "seen_urls": {}}
+        return {"stocks": {}}
     return json.loads(STATE_PATH.read_text(encoding="utf-8"))
 
 
 def save_state(state: dict[str, Any]) -> None:
+    state.pop("seen_urls", None)  # 과거 버전이 남긴 미사용 키 정리
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     STATE_PATH.write_text(
         json.dumps(state, ensure_ascii=False, indent=2, sort_keys=True),
         encoding="utf-8",
     )
-
-
-def decide_status(method: str, reason: str, previous_method: str) -> tuple[str, str]:
-    if reason == "explicit_switch":
-        return "확인", "본문에 PBR→PER 전환 표현이 감지됨"
-    if previous_method.startswith("PBR") and method.startswith("PER"):
-        return "확인", f"이전 방식 {previous_method} → 현재 {method}로 변경"
-    if method in {"PER/PBR 병행", "SOTP/EV"}:
-        return "후보", f"현재 방식이 {method}로 감지되어 전환 가능성 있음"
-    if method.startswith("PER"):
-        return "후보", "PER 산정 신호가 강하지만 이전 PBR 기록은 없음"
-    return "관찰", f"현재 방식은 {method}"
 
 
 def decide_status_v2(c: "Candidate") -> tuple[str, str]:
@@ -1079,8 +1089,8 @@ def dedupe_results(results: list[SearchResult]) -> list[SearchResult]:
 # ── 수집 ─────────────────────────────────────────────────────────────────────
 
 def collect_results() -> tuple[list[SearchResult], str]:
-    lookback_days = int(os.getenv("LOOKBACK_DAYS", "2"))
-    limit_per_query = int(os.getenv("LIMIT_PER_QUERY", "8"))
+    lookback_days = _env_int("LOOKBACK_DAYS", 2)
+    limit_per_query = _env_int("LIMIT_PER_QUERY", 8)
     provider = search_provider_name()
 
     results: list[SearchResult] = []
@@ -1098,7 +1108,7 @@ def collect_results() -> tuple[list[SearchResult], str]:
     print(f"[info] naver news: {len(naver_results)} results", file=sys.stderr)
 
     # 3) 한경 컨센서스 — 증권사 리포트 PDF (산식 수치 추출용)
-    consensus_limit = int(os.getenv("CONSENSUS_LIMIT", "30"))
+    consensus_limit = _env_int("CONSENSUS_LIMIT", 30)
     consensus_results = collect_consensus(consensus_limit)
     results.extend(consensus_results)
     print(f"[info] consensus PDFs: {len(consensus_results)} results", file=sys.stderr)
@@ -1465,36 +1475,11 @@ def tg_confirmed_line(c: Candidate) -> str:
     return "\n".join(lines)
 
 
-def send_telegram(
-    bot_token: str,
-    chat_id: str,
-    candidates: list[Candidate],
-    state: dict[str, Any] | None = None,
-) -> None:
-    confirmed = build_confirmed_followups(candidates, state) if state is not None else dedupe_by_stock([c for c in candidates if c.status == "확인"])
+# 텔레그램 sendMessage 본문 한도는 4096자 — HTML 태그 여유분을 둔다
+TELEGRAM_TEXT_LIMIT = 3900
 
-    if not confirmed:
-        return
 
-    lines = [
-        f"📊 <b>밸류에이션 전환 팔로업 — {TODAY_KST.isoformat()}</b>",
-        f"확인 종목 {len(confirmed)}",
-        "\n🔴 <b>확인된 전환</b>",
-    ]
-
-    shown = confirmed[:8]
-    lines.extend(tg_confirmed_line(c) for c in shown)
-    more = len(confirmed) - len(shown)
-    if more > 0:
-        lines.append(f"… 외 확인 {more}건")
-
-    lines.append(
-        "\n📄 <a href='https://github.com/helloblackfinger/"
-        f"valuation-method-watch/blob/main/reports/{TODAY_KST.isoformat()}.md'>전체 리포트</a>"
-    )
-
-    text = "\n".join(lines)
-
+def _send_telegram_message(bot_token: str, chat_id: str, text: str) -> None:
     try:
         resp = requests.post(
             f"https://api.telegram.org/bot{bot_token}/sendMessage",
@@ -1510,6 +1495,49 @@ def send_telegram(
         print(f"[info] telegram sent: {resp.json().get('ok')}", file=sys.stderr)
     except Exception as exc:
         print(f"[warn] telegram send failed: {exc}", file=sys.stderr)
+
+
+def send_telegram(
+    bot_token: str,
+    chat_id: str,
+    candidates: list[Candidate],
+    state: dict[str, Any] | None = None,
+) -> None:
+    confirmed = build_confirmed_followups(candidates, state) if state is not None else dedupe_by_stock([c for c in candidates if c.status == "확인"])
+
+    if not confirmed:
+        return
+
+    repo = os.getenv("GITHUB_REPOSITORY") or "helloblackfinger/valuation-method-watch"
+    header = (
+        f"📊 <b>밸류에이션 전환 팔로업 — {TODAY_KST.isoformat()}</b>\n"
+        f"확인 종목 {len(confirmed)}\n"
+        "\n🔴 <b>확인된 전환</b>"
+    )
+    footer = (
+        f"\n📄 <a href='https://github.com/{repo}/blob/main/"
+        f"reports/{TODAY_KST.isoformat()}.md'>전체 리포트</a>"
+    )
+
+    shown = confirmed[:8]
+    blocks = [tg_confirmed_line(c) for c in shown]
+    more = len(confirmed) - len(shown)
+    if more > 0:
+        blocks.append(f"… 외 확인 {more}건")
+
+    # 종목 블록 단위로 잘라 4096자 제한을 넘지 않게 여러 메시지로 발송
+    messages: list[str] = []
+    current = header
+    for block in blocks:
+        if len(current) + len(block) + 1 > TELEGRAM_TEXT_LIMIT:
+            messages.append(current)
+            current = f"📊 밸류에이션 전환 팔로업 (계속 {len(messages) + 1})"
+        current += "\n" + block
+    current += "\n" + footer
+    messages.append(current)
+
+    for text in messages:
+        _send_telegram_message(bot_token, chat_id, text)
 
 
 # ── AI 요약 ──────────────────────────────────────────────────────────────────
@@ -1620,7 +1648,9 @@ def render_candidate(c: Candidate) -> str:
 
 
 def escape_md(text: str) -> str:
-    return text.replace("\n", " ").strip()
+    # 대괄호는 마크다운 링크 문법을 깨뜨리므로 이스케이프한다
+    text = text.replace("\n", " ").strip()
+    return text.replace("[", "\\[").replace("]", "\\]")
 
 
 def render_report(
@@ -1863,6 +1893,17 @@ def update_candidates_with_state(candidates: list[Candidate], state: dict[str, A
     confirmed_registry = state.setdefault("confirmed_transitions", {})
     now = dt.datetime.now(KST).isoformat(timespec="seconds")
     today = TODAY_KST.isoformat()
+
+    # 오래 전 확인된 뒤 갱신이 없는 종목은 팔로업 목록에서 만료시킨다
+    cutoff = TODAY_KST - dt.timedelta(days=CONFIRMED_FOLLOWUP_DAYS)
+    for stock_key in list(confirmed_registry):
+        record = confirmed_registry[stock_key]
+        last = str(record.get("last_seen_at") or record.get("confirmed_at") or "")[:10]
+        try:
+            if dt.date.fromisoformat(last) < cutoff:
+                del confirmed_registry[stock_key]
+        except ValueError:
+            pass
 
     for candidate in candidates:
         previous = stocks.get(candidate.key, {})
